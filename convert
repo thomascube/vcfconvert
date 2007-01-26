@@ -1,0 +1,91 @@
+#!/usr/bin/php -qC 
+<?php
+
+require_once('vcard_convert.php');
+
+/**
+ * Parse commandline arguments into a hash array
+ */
+function get_args()
+{
+	$args = array();
+	for ($i=1; $i<count($_SERVER['argv']); $i++)
+	{
+		$arg = $_SERVER['argv'][$i];
+		if ($arg{0} == '-')
+		{
+			$key = substr($arg, 1);
+			$value = $_SERVER['argv'][$i+1]{0} != '-' ? $_SERVER['argv'][++$i] : true;
+			$args[$key] = preg_replace(array('/^["\']/', '/["\']$/'), '', $value);
+		}
+		else
+			$args[] = $arg;
+	}
+
+	return $args;
+}
+
+// read commandline arguments
+$opt = get_args();
+$usage = "Usage: convert [-m -h -v] [-d delimiter] [-o output_file] -f format file\n" .
+"  -f Target format (ldif,csv,gmail)\n" .
+"  -o Output file (write to stdout by default)\n" .
+"  -d CSV col delimiter\n" .
+"  -h Include header line in CSV output\n" .
+"  -m Only convert cards with an e-mail address\n" .
+"  -v Verbose output\n";
+
+// show help
+if ($opt[0]=='help')
+	die($usage);
+
+// read arguments
+$file = array_pop($opt);
+$format = $opt['f'] ? $opt['f'] : 'ldif';
+
+if (empty($file))
+	die("Not enough arguments!\n$usage");
+
+// instantiate a parser object
+$conv = new vcard_convert();
+
+// parse a vCard file
+if ($conv->fromFile($file))
+{
+	if (isset($opt['v']))
+		echo "Detected $conv->charset encoding\n";
+	if (isset($opt['v']) && isset($opt['m']))
+		echo "Only convert vCards with an e-mail address\n";
+		
+		if ($format == 'ldif')
+			$out = $conv->toLdif(isset($opt['m']));
+
+		else if ($format == 'gmail')
+			$out = $conv->toGmail(isset($opt['m']));
+			
+		else if ($format == 'csv')
+		{
+			$delimiter = $opt['d'] ? ($opt['d']=='\t' || $opt['d']=='tab' ? "\t" : $opt['d']) : ";";
+			$out = $conv->toCSV($delimiter, isset($opt['m']), isset($opt['h']));
+		}
+		
+		// write to output file
+		if ($opt['o'])
+		{
+			if ($fp = @fopen($opt['o'], 'w'))
+			{
+				fwrite($fp, $out);
+				fclose($fp);
+				echo "Wrote ".count($conv->cards)." cards to $opt[o]\n";
+			}
+			else
+				die("Cannot write to $opt[o]; permission denied\n");
+		}
+		else
+			echo $out;
+}
+else
+	echo "Cannot parse $file\n";
+
+
+?>
