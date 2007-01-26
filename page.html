@@ -28,6 +28,17 @@ td.cell {
   color: #cc0000;
 }
 
+.disclaimer {
+  width: 48em;
+  border: 1px solid #0c0;
+  margin-top: 1em;
+  padding: 1em;
+}
+
+.disclaimer h4 {
+  margin-top: 0;
+}
+
 </style>
 </head>
 <body>
@@ -82,7 +93,19 @@ if (!empty($GLOBALS['error_msg']))
 <td><br><input type="submit" value="convert"></td>
 
 </tr></table>
-
 </form>
+
+<div class="disclaimer">
+<h4>Privacy Policy</h4>
+
+<p>This public service is intended to provide simple functions to convert any vCard file into another format.
+It was created for personal needs and is now provided on a private and non commercial basis.
+The uploaded file will not be stored permanently nor will the converted addresses be kept on the server.</p>
+
+<p>You can also download the script and run it locally. All you need is a shell with PHP installed.</p>
+
+<p>For questions about privacy and security, please contact endless[at]brotherli[.]ch</p>
+</div>
+
 </body>
 </html>
