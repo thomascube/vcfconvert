@@ -76,7 +76,7 @@ if ($conv->fromFile($file))
 			{
 				fwrite($fp, $out);
 				fclose($fp);
-				echo "Wrote ".count($conv->cards)." cards to $opt[o]\n";
+				echo "Wrote ".$conv->export_count." cards to $opt[o]\n";
 			}
 			else
 				die("Cannot write to $opt[o]; permission denied\n");
