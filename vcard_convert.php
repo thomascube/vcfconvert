@@ -45,6 +45,9 @@ class vCard
 }
 
 
+/**
+ * vCard to LDIF/CSV Converter Class
+ */
 class vcard_convert extends Contact_Vcard_Parse
 {
 	var $parsed = array();
@@ -78,7 +81,7 @@ class vcard_convert extends Contact_Vcard_Parse
 		if ($encoding = vcard_convert::get_encoding($text))
 			$this->charset = $encoding;
 
-		$this->parsed = parent::fromText(vcard_convert::charset_convert($text), $decode_qp);
+		$this->parsed = parent::fromText($this->utf8_convert($text), $decode_qp);
 		if (!empty($this->parsed))
 		{
 			$this->normalize();
@@ -90,7 +93,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	
 	
 	/**
-	 * Convert the abstract vCard structure into associative address objects
+	 * Convert the abstract vCard structure into address objects
 	 *
 	 * @access private
 	 */
@@ -141,7 +144,7 @@ class vcard_convert extends Contact_Vcard_Parse
 				$this->parse_url($card['URL'], $vcard);
 			else if (is_array($card['ITEM1.URL']))
 				$this->parse_url($card['ITEM1.URL'], $vcard);
-			else if (is_array($card['ITEM2.URL']))
+			if (is_array($card['ITEM2.URL']))
 				$this->parse_url($card['ITEM2.URL'], $vcard);
 
 			// extract addresses
@@ -304,7 +307,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	/**
 	 * Convert the parsed vCard data into CSV format
 	 */
-	function toCSV($delm="\t", $mailonly=false, $add_title=true)
+	function toCSV($delm="\t", $mailonly=false, $add_title=true, $encoding=null)
 		{
 		$out = '';
 		$this->export_count = 0;
@@ -359,15 +362,20 @@ class vcard_convert extends Contact_Vcard_Parse
 			$this->export_count++;
 		}
 
+		// convert to ISO-8859-1
+		if ($encoding == 'ISO-8859-1' && function_exists('utf8_decode'))
+			$out = utf8_decode($out);
+
 		return $out;
 	}
 	
 	/**
 	 * New GMail export function
 	 *
-	 *  @author Max Plischke <plischke@gmail.com>
+	 * @author Thomas Bruederli
+	 * @author Max Plischke <plischke@gmail.com>
 	 */
-	function toGmail($mailonly=FALSE)
+	function toGmail($mailonly=false)
 	{
 		$delm = ',';
 		$this->export_count = 0;
@@ -438,9 +446,9 @@ class vcard_convert extends Contact_Vcard_Parse
 
 
 	/**
-	 *
+	 * Export cards as Ldif
 	 */
-	function toLdif($mailonly=fals)
+	function toLdif($mailonly=false)
 		{
 		$out = '';
 		$this->export_count = 0;
@@ -515,18 +523,21 @@ class vcard_convert extends Contact_Vcard_Parse
 
 
 	/**
+	 * Encode one col string for CSV export
+	 *
 	 * @access private
 	 */
 	function csv_encode($str, $delm, $add_delm=true)
 	{
 		if (strpos($str, $delm))
 			$str = '"'.$str.'"';
-
-		return preg_replace('/\r?\n/', ' ', utf8_decode($str)) . ($add_delm ? $delm : '');
+		return preg_replace('/\r?\n/', ' ', $str) . ($add_delm ? $delm : '');
 	}
 	
 	
 	/**
+	 * Encode one col string for Ldif export
+	 *
 	 * @access private
 	 */
 	function ldif_encode($str)
@@ -538,31 +549,33 @@ class vcard_convert extends Contact_Vcard_Parse
 			return ' ' . $str;
 	}
 
+
 	/**
+	 * Convert a string to UTF-8
+	 *
 	 * @access private
-	 * @static
 	 */
-	function charset_convert($str)
+	function utf8_convert($str)
 	{
 		// try to convert to UTF-8
 		if ($this->charset != 'UTF-8')
 		{
-			if ($this->charset == 'ISO-8859-1')
+			if ($this->charset == 'ISO-8859-1' && function_exists('utf8_encode'))
 				$str = utf8_encode($str);
 			else if (function_exists('mb_convert_encoding'))
 			{
 				$str = mb_convert_encoding($str, 'UTF-8', $this->charset);
 				if (strlen($str) == 0)
-					die("Error: mbstring failed to convert the text!");
+					error_log("Vcfconvert error: mbstring failed to convert the text!");
 			}
 			else if (function_exists('iconv'))
 			{
 				$str = iconv($this->charset, 'UTF-8', $str);
 				if (strlen($str) == 0)
-					die("Error: iconv failed to convert the text!");
+					error_log("Vcfconvert error: iconv failed to convert the text!");
 			}
 			else
-				echo "Warning: the vcard is not in UTF-8.";
+				error_log("Vcfconvert warning: the vcard is not in UTF-8.");
 		}
 
 		// strip BOM if it is still there
