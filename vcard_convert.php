@@ -214,10 +214,9 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		foreach($node as $url)
 		{
-			$type = strtoupper($url['param']['TYPE'][0]);
-			if(strstr($type, 'WORK') || strstr($type, 'PREF') || !$type)
+			if (!$url['param']['TYPE'][0] || in_array("WORK", $url['param']['TYPE']) || in_array("PREF", $url['param']['TYPE']))
 				$vcard->work['url'] = $url['value'][0][0];
-			if(strstr($type, 'HOME'))
+			if(in_array("HOME", $url['param']['TYPE']))
 				$vcard->home['url'] = $url['value'][0][0];
 		}
 	}
@@ -231,9 +230,9 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		foreach($node as $adr)
 		{
-			if(strstr($adr['param']['TYPE'][0], 'HOME') || !$adr['param']['TYPE'][0])
+			if(!$adr['param']['TYPE'][0] || in_array("HOME", $adr['param']['TYPE']))
 				$home = $adr['value'];
-			if(strstr($adr['param']['TYPE'][0], 'WORK'))
+			if(in_array("WORK", $adr['param']['TYPE']))
 				$work = $adr['value'];
 		}
 		
@@ -290,23 +289,23 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		foreach($node as $tel)
 		{
-			if ($tel['param']['TYPE'][0] == "HOME")
+			if (in_array("HOME", $tel['param']['TYPE']))
 			{
-				if ($tel['param']['TYPE'][1] == "FAX")
+				if (in_array("FAX", $tel['param']['TYPE']))
 					$vcard->home['fax'] = $tel['value'][0][0];
-				else 
+				else
 					$vcard->home['phone'] = $tel['value'][0][0];
 			}
-			else if ($tel['param']['TYPE'][0] == "WORK")
+			else if (in_array("WORK", $tel['param']['TYPE']))
 			{
-				if($tel['param']['TYPE'][1] == "FAX")
+				if(in_array("FAX", $tel['param']['TYPE']))
 					$vcard->work['fax'] = $tel['value'][0][0];
 				else
 					$vcard->work['phone'] = $tel['value'][0][0];
 			}
-			else if ($tel['param']['TYPE'][0] == "PAGER")
+			else if (in_array("PAGER", $tel['param']['TYPE']))
 				$vcard->pager = $tel['value'][0][0];
-			else if ($tel['param']['TYPE'][0] == "CELL")
+			else if (in_array("CELL", $tel['param']['TYPE']))
 				$vcard->mobile = $tel['value'][0][0];
 		}
 	}
