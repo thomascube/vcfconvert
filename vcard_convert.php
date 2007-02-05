@@ -52,6 +52,7 @@ class vcard_convert extends Contact_Vcard_Parse
 {
 	var $parsed = array();
 	var $vcards = array();
+	var $file_charset = 'ISO-8859-1';
 	var $charset = 'ISO-8859-1';
 	var $export_count = 0;
 
@@ -79,9 +80,16 @@ class vcard_convert extends Contact_Vcard_Parse
 	function fromText($text, $decode_qp = true)
 	{
 		if ($encoding = vcard_convert::get_encoding($text))
-			$this->charset = $encoding;
+			$this->charset = $this->file_charset = $encoding;
 
-		$this->parsed = parent::fromText($this->utf8_convert($text), $decode_qp);
+		// convert document to UTF-8
+		if ($this->charset != 'UTF-8' && $this->charset != 'ISO-8859-1')
+		{
+			$text = $this->utf8_convert($text);
+			$this->charset = 'UTF-8';
+		}
+
+		$this->parsed = parent::fromText($text, $decode_qp);
 		if (!empty($this->parsed))
 		{
 			$this->normalize();
@@ -363,7 +371,7 @@ class vcard_convert extends Contact_Vcard_Parse
 		}
 
 		// convert to ISO-8859-1
-		if ($encoding == 'ISO-8859-1' && function_exists('utf8_decode'))
+		if ($encoding == 'ISO-8859-1' && $this->charset == 'UTF-8' && function_exists('utf8_decode'))
 			$out = utf8_decode($out);
 
 		return $out;
@@ -544,7 +552,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		// base64-encode all values that contain non-ascii chars
 		if (preg_match('/[^\x09\x0A\x0D\x20-\x7E]/', $str))
-			return ': ' . base64_encode($str);
+			return ': ' . base64_encode($this->utf8_convert($str));
 		else
 			return ' ' . $str;
 	}
@@ -555,22 +563,25 @@ class vcard_convert extends Contact_Vcard_Parse
 	 *
 	 * @access private
 	 */
-	function utf8_convert($str)
+	function utf8_convert($str, $from=null)
 	{
+		if (!$from)
+			$from = $this->charset;
+
 		// try to convert to UTF-8
-		if ($this->charset != 'UTF-8')
+		if ($from != 'UTF-8')
 		{
-			if ($this->charset == 'ISO-8859-1' && function_exists('utf8_encode'))
+			if ($from == 'ISO-8859-1' && function_exists('utf8_encode'))
 				$str = utf8_encode($str);
 			else if (function_exists('mb_convert_encoding'))
 			{
-				$str = mb_convert_encoding($str, 'UTF-8', $this->charset);
+				$str = mb_convert_encoding($str, 'UTF-8', $from);
 				if (strlen($str) == 0)
 					error_log("Vcfconvert error: mbstring failed to convert the text!");
 			}
 			else if (function_exists('iconv'))
 			{
-				$str = iconv($this->charset, 'UTF-8', $str);
+				$str = iconv($from, 'UTF-8', $str);
 				if (strlen($str) == 0)
 					error_log("Vcfconvert error: iconv failed to convert the text!");
 			}

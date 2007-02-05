@@ -1,6 +1,22 @@
 #!/usr/bin/php -qC 
 <?php
 
+/*
+ +-----------------------------------------------------------------------+
+ | Commandline vCard converter                                           |
+ | Version 0.7.1                                                         |
+ |                                                                       |
+ | Copyright (C) 2006-2007, Thomas Bruederli - Switzerland               |
+ | Licensed under the GNU GPL                                            |
+ |                                                                       |
+ | Type './convert help' for usage information                           |
+ |                                                                       |
+ +-----------------------------------------------------------------------+
+ | Author: Thomas Bruederli <thomas@brotherli.ch>                        |
+ +-----------------------------------------------------------------------+
+
+*/
+
 @ini_set('error_reporting', E_ALL&~E_NOTICE); 
 
 require_once('vcard_convert.php');
@@ -62,7 +78,7 @@ $conv = new vcard_convert();
 if ($conv->fromFile($file))
 {
 	if (isset($opt['v']))
-		echo "Detected $conv->charset encoding\n";
+		echo "Detected $conv->file_charset encoding\n";
 	if (isset($opt['v']) && isset($opt['m']))
 		echo "Only convert vCards with an e-mail address\n";
 		
