@@ -119,6 +119,9 @@ class vcard_convert extends Contact_Vcard_Parse
 			$vcard->firstname = trim($names[1][0]);
 			$vcard->middlename = trim($names[2][0]);
 			$vcard->title = trim($names[3][0]);
+			
+			if (empty($vcard->title) && isset($card['TITLE']))
+				$vcard->title = trim($card['TITLE'][0]['value'][0][0]);
 
 			$vcard->displayname = isset($card['FN']) ? trim($card['FN'][0]['value'][0][0]) : '';
 			$vcard->nickname    = isset($card['NICKNAME']) ? trim($card['NICKNAME'][0]['value'][0][0]) : '';
@@ -214,9 +217,9 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		foreach($node as $url)
 		{
-			if (empty($url['param']['TYPE'][0]) || in_array("WORK", $url['param']['TYPE']) || in_array("pref", $url['param']['TYPE']))
+			if (empty($url['param']['TYPE'][0]) || in_array_nc("WORK", $url['param']['TYPE']) || in_array_nc("PREF", $url['param']['TYPE']))
 				$vcard->work['url'] = $url['value'][0][0];
-			if (in_array("HOME", $url['param']['TYPE']))
+			if (in_array_nc("HOME", $url['param']['TYPE']))
 				$vcard->home['url'] = $url['value'][0][0];
 		}
 	}
@@ -230,9 +233,9 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		foreach($node as $adr)
 		{
-			if (empty($adr['param']['TYPE'][0]) || in_array("HOME", $adr['param']['TYPE']))
+			if (empty($adr['param']['TYPE'][0]) || in_array_nc("HOME", $adr['param']['TYPE']))
 				$home = $adr['value'];
-			if (in_array("WORK", $adr['param']['TYPE']))
+			if (in_array_nc("WORK", $adr['param']['TYPE']))
 				$work = $adr['value'];
 		}
 		
@@ -289,23 +292,23 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		foreach($node as $tel)
 		{
-			if (in_array("HOME", $tel['param']['TYPE']))
+			if (in_array_nc("HOME", $tel['param']['TYPE']) || in_array_nc("PREF", $tel['param']['TYPE']))
 			{
-				if (in_array("FAX", $tel['param']['TYPE']))
+				if (in_array_nc("FAX", $tel['param']['TYPE']))
 					$vcard->home['fax'] = $tel['value'][0][0];
 				else
 					$vcard->home['phone'] = $tel['value'][0][0];
 			}
-			else if (in_array("WORK", $tel['param']['TYPE']))
+			else if (in_array_nc("WORK", $tel['param']['TYPE']))
 			{
-				if(in_array("FAX", $tel['param']['TYPE']))
+				if(in_array_nc("FAX", $tel['param']['TYPE']))
 					$vcard->work['fax'] = $tel['value'][0][0];
 				else
 					$vcard->work['phone'] = $tel['value'][0][0];
 			}
-			else if (in_array("PAGER", $tel['param']['TYPE']))
+			else if (in_array_nc("PAGER", $tel['param']['TYPE']))
 				$vcard->pager = $tel['value'][0][0];
-			else if (in_array("CELL", $tel['param']['TYPE']))
+			else if (in_array_nc("CELL", $tel['param']['TYPE']))
 				$vcard->mobile = $tel['value'][0][0];
 		}
 	}
@@ -340,7 +343,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($card->nickname, $delm);
 			$out .= $this->csv_encode($card->email, $delm);
 			$out .= $this->csv_encode($card->email2, $delm);
-			$out .= $this->csv_encode($card->home['home'], $delm);
+			$out .= $this->csv_encode($card->home['phone'], $delm);
 			$out .= $this->csv_encode($card->work['phone'], $delm);
 			$out .= $this->csv_encode($card->home['fax'], $delm);
 			$out .= $this->csv_encode($card->pager, $delm);
@@ -357,7 +360,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($card->work['state'], $delm);
 			$out .= $this->csv_encode($card->work['zipcode'], $delm);
 			$out .= $this->csv_encode($card->work['country'], $delm);
-			$out .= /* $card['title'] . */ $delm;
+			$out .= /* $this->csv_encode($card->title, $delm) . */ $delm;
 			$out .= $this->csv_encode($card->department, $delm);
 			$out .= $this->csv_encode($card->organization, $delm);
 			$out .= $this->csv_encode($card->notes, $delm);
@@ -642,6 +645,20 @@ class vcard_convert extends Contact_Vcard_Parse
 	}
 	
 }  // end class vcard_convert
+
+
+/**
+ * Checks if a value exists in an array non-case-sensitive
+ */
+function in_array_nc($needle, $haystack, $strict = false)
+{
+	foreach ((array)$haystack as $key => $value)
+	{
+		if (strtolower($needle) == strtolower($value) && ($strict || gettype($needle) == gettype($value)))
+			return true;
+	}
+	return false;
+}
 
 
 ?>
