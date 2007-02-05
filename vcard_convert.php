@@ -214,9 +214,9 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		foreach($node as $url)
 		{
-			if (!$url['param']['TYPE'][0] || in_array("WORK", $url['param']['TYPE']) || in_array("PREF", $url['param']['TYPE']))
+			if (empty($url['param']['TYPE'][0]) || in_array("WORK", $url['param']['TYPE']) || in_array("pref", $url['param']['TYPE']))
 				$vcard->work['url'] = $url['value'][0][0];
-			if(in_array("HOME", $url['param']['TYPE']))
+			if (in_array("HOME", $url['param']['TYPE']))
 				$vcard->home['url'] = $url['value'][0][0];
 		}
 	}
@@ -230,9 +230,9 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		foreach($node as $adr)
 		{
-			if(!$adr['param']['TYPE'][0] || in_array("HOME", $adr['param']['TYPE']))
+			if (empty($adr['param']['TYPE'][0]) || in_array("HOME", $adr['param']['TYPE']))
 				$home = $adr['value'];
-			if(in_array("WORK", $adr['param']['TYPE']))
+			if (in_array("WORK", $adr['param']['TYPE']))
 				$work = $adr['value'];
 		}
 		
