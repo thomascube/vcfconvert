@@ -449,17 +449,72 @@ class vcard_convert extends Contact_Vcard_Parse
 
 			$out .= "\n";
 			$this->export_count++;
+		}
+
+	return $out;
+	}
+
+	/**
+	 * Convert the parsed vCard data into libdlusb format
+	 *
+	 * @author Kevin Clement <donkjunk@softhome.net>
+	 */
+	function toLibdlusb($mailonly=false)
+	{
+		$delm="; ";
+		$out = '';
+		$this->export_count = 0;
+
+		foreach ($this->cards as $card)
+		{
+			if ($mailonly && empty($card->email) && empty($card->email2))
+				continue;
+
+			// a little ugly but this filters out files that only have incompatible data to prevent "blank" files
+			if (empty($card->home['phone']) && empty($card->work['phone']) && empty($card->email) && empty($card->mobile))
+				continue;
+
+			// having determined there is data that needs exporting this
+			// makes certain we don't have holes to save watch memory
+			$out .= $this->csv_encode($card->displayname, $delm);
+			if ($card->home['phone'] != '')
+			{
+				$out .= 'Home = ';
+				$out .= $this->csv_encode($card->home['phone'], $delm);
+			}
+			if ($card->work['phone'] != '')
+			{
+				$out .= 'Work = ';
+				$out .= $this->csv_encode($card->work['phone'], $delm);
+			}
+			if ($card->email != '')
+			{
+				$out .= 'Email = ';
+				$out .= $this->csv_encode($card->email, $delm);
+			}
+			if($card->mobile != '')
+			{
+				$out .= 'Mobile = ';
+				$out .= $this->csv_encode($card->mobile, $delm);
 			}
 
-		return $out;
+			$out .= "\n";
+			$this->export_count++;
 		}
+
+		// convert to ISO-8859-1
+		//if ($encoding == 'ISO-8859-1' && $this->charset == 'UTF-8' && function_exists('utf8_decode'))
+		//	$out = utf8_decode($out);
+
+		return $out;
+	}
 
 
 	/**
 	 * Export cards as Ldif
 	 */
 	function toLdif($mailonly=false)
-		{
+	{
 		$out = '';
 		$this->export_count = 0;
 

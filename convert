@@ -4,7 +4,7 @@
 /*
  +-----------------------------------------------------------------------+
  | Commandline vCard converter                                           |
- | Version 0.7.1                                                         |
+ | Version 0.7.3                                                         |
  |                                                                       |
  | Copyright (C) 2006-2007, Thomas Bruederli - Switzerland               |
  | Licensed under the GNU GPL                                            |
@@ -50,7 +50,7 @@ function get_args()
 $opt = get_args();
 $usage = <<<EOF
 Usage: convert [-himv] [-d delimiter] [-o output_file] -f format file
-  -f Target format (ldif,csv,gmail)
+  -f Target format (ldif,csv,gmail,libdlusb)
   -o Output file (write to stdout by default)
   -d CSV col delimiter
   -h Include header line in CSV output
@@ -87,6 +87,9 @@ if ($conv->fromFile($file))
 
 		else if ($format == 'gmail')
 			$out = $conv->toGmail(isset($opt['m']));
+
+		else if ($format == 'libdlusb')
+			$out = $conv->toLibdlusb(isset($opt['m']));
 			
 		else if ($format == 'csv')
 		{
@@ -96,6 +99,8 @@ if ($conv->fromFile($file))
 			if (isset($opt['v']) && isset($opt['i']))
 				echo "Converting output to ISO-8859-1\n";
 		}
+		else
+			die("Unknown output format\n");
 		
 		// write to output file
 		if ($opt['o'])

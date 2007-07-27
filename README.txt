@@ -1,4 +1,5 @@
 vCard to LDIF/CSV Converter
+===========================
 by Thomas Bruederli
 
 To run this converter just copy all files to a webserver directory where PHP
@@ -21,8 +22,19 @@ or
 To get information about optinal parameters, type
 > ./convert help
 
-This script is licensed under the GNU GPL. Please read the license file at
+This script is licensed under the GNU GPL a copy of which has been provided.
+Copies of this license can also be found at
 http://www.fsf.org/licensing/licenses/gpl.txt
 
 For any bug reports or feature requests please visit my website 
 http://labs.brotherli.ch or send a message to endless@brotherli.ch
+
+
+** Note from Kevin on libdlusb compatibility **
+Due to the fact libdlusb is incapable of transmitting all the information
+generally used with the contact application (currently it is capable of 
+only transmitting name, type, and phone number) I have intentionally organized
+the format to be convenient for saving into the note application instead. This 
+allows the user to have multiple phone numbers per entry along with an e-mail
+address.
+
