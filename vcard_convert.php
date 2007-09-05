@@ -568,6 +568,8 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['workurl'] = $card->work['url'];
 			if ($card->home['url'])
 				$a_out['homeurl'] = $card->home['url'];
+			if ($card->notes)
+				$a_out['description'] = $card->notes;
 
 			// compose ldif output
 			foreach ($a_out as $key => $val)
