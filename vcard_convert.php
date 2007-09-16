@@ -64,8 +64,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	 */
 	function fromFile($filename, $decode_qp = true)
 	{
-		$text = $this->fileGetContents($filename);
-		if ($text === false)
+		if (!filesize($filename) || ($text = $this->fileGetContents($filename)) === false)
 			return false;
 
 		// dump to, and get return from, the fromText() method.
