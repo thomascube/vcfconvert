@@ -547,6 +547,8 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['homeStreet'] = $card->home['addr1'];
 			if ($card->home['city'])
 				$a_out['mozillaHomeLocalityName'] = $card->home['city'];
+			if ($card->home['state'])
+				$a_out['mozillaHomeState'] = $card->home['state'];
 			if ($card->home['zipcode'])
 				$a_out['mozillaHomePostalCode'] = $card->home['zipcode'];
 			if ($card->home['country'])
