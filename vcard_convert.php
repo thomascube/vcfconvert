@@ -291,7 +291,11 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		foreach($node as $tel)
 		{
-			if (in_array_nc("HOME", $tel['param']['TYPE']) || in_array_nc("PREF", $tel['param']['TYPE']))
+			if (in_array_nc("PAGER", $tel['param']['TYPE']))
+				$vcard->pager = $tel['value'][0][0];
+			else if (in_array_nc("CELL", $tel['param']['TYPE']))
+				$vcard->mobile = $tel['value'][0][0];
+			else if (in_array_nc("HOME", $tel['param']['TYPE']) || in_array_nc("PREF", $tel['param']['TYPE']))
 			{
 				if (in_array_nc("FAX", $tel['param']['TYPE']))
 					$vcard->home['fax'] = $tel['value'][0][0];
@@ -305,10 +309,6 @@ class vcard_convert extends Contact_Vcard_Parse
 				else
 					$vcard->work['phone'] = $tel['value'][0][0];
 			}
-			else if (in_array_nc("PAGER", $tel['param']['TYPE']))
-				$vcard->pager = $tel['value'][0][0];
-			else if (in_array_nc("CELL", $tel['param']['TYPE']))
-				$vcard->mobile = $tel['value'][0][0];
 		}
 	}
 	
@@ -543,6 +543,8 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['homePhone'] = $card->home['phone'];
 			if ($card->mobile)
 				$a_out['mobile'] = $card->mobile;
+			if ($card->pager)
+				$a_out['pager'] = $card->pager;
 			if ($card->home['addr1'])
 				$a_out['homeStreet'] = $card->home['addr1'];
 			if ($card->home['city'])
@@ -559,6 +561,8 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['street'] = $card->work['addr1'];
 			if ($card->work['city'])
 				$a_out['l'] = $card->work['city'];
+			if ($card->work['state'])
+				$a_out['st'] = $card->work['state'];
 			if ($card->work['zipcode'])
 				$a_out['postalCode'] = $card->work['zipcode'];
 			if ($card->work['country'])
@@ -571,6 +575,8 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['homeurl'] = $card->home['url'];
 			if ($card->notes)
 				$a_out['description'] = $card->notes;
+			if ($card->birthday)
+				$a_out['mozillaCustom1'] = sprintf("%04d-%02d-%02d", $card->birthday['y'], $card->birthday['m'], $card->birthday['d']);
 
 			// compose ldif output
 			foreach ($a_out as $key => $val)
@@ -611,7 +617,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	function ldif_encode($str)
 	{
 		// base64-encode all values that contain non-ascii chars
-		if (preg_match('/[^\x09\x0A\x0D\x20-\x7E]/', $str))
+		if (preg_match('/[^\x09\x20-\x7E]/', $str))
 			return ': ' . base64_encode($this->utf8_convert($str));
 		else
 			return ' ' . $str;
