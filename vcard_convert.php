@@ -5,7 +5,7 @@
  | vCard to LDIF/CSV Converter Class                                     |
  | extends the PEAR Contact_Vcard_Parse Class                            |
  |                                                                       |
- | Copyright (C) 2006-2007, Thomas Bruederli - Switzerland               |
+ | Copyright (C) 2006-2008, Thomas Bruederli - Switzerland               |
  | Licensed under the GNU GPL                                            |
  |                                                                       |
  +-----------------------------------------------------------------------+
@@ -706,7 +706,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			| \xF0[\x90-\xBF][\x80-\xBF]{2}
 			| [\xF1-\xF3][\x80-\xBF]{3}
 			| \xF4[\x80-\x8F][\x80-\xBF]{2}
-			)*\z/xs', substr($string, 0, 4096));
+			)+\z/xs', substr($string, 0, 4096));
 	}
 	
 }  // end class vcard_convert
