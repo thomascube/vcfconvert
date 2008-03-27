@@ -706,7 +706,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			| \xF0[\x90-\xBF][\x80-\xBF]{2}
 			| [\xF1-\xF3][\x80-\xBF]{3}
 			| \xF4[\x80-\x8F][\x80-\xBF]{2}
-			)+\z/xs', substr($string, 0, 4096));
+			)*\z/xs', substr($string, 0, 2048));
 	}
 	
 }  // end class vcard_convert
