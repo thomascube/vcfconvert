@@ -42,17 +42,17 @@ function show_bytes($bytes)
 	if ($bytes > 1073741824)
 	{
 		$gb = $bytes/1073741824;
-		$str = sprintf($gb>=10 ? "%d GB" : "%.1f GB", $gb);
+		$str = sprintf($gb>=10 ? "%dGB" : "%.1fGB", $gb);
 	}
 	else if ($bytes > 1048576)
 	{
 		$mb = $bytes/1048576;
-		$str = sprintf($mb>=10 ? "%d MB" : "%.1f MB", $mb);
+		$str = sprintf($mb>=10 ? "%dMB" : "%.1fMB", $mb);
 	}
 	else if ($bytes > 1024)
-		$str = sprintf("%d KB",	 round($bytes/1024));
+		$str = sprintf("%dKB",	 round($bytes/1024));
 	else
-		$str = sprintf('%d B', $bytes);
+		$str = sprintf('%dB', $bytes);
 
 	return $str;
 }
