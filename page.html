@@ -43,6 +43,36 @@ td.cell {
 }
 
 </style>
+<script type="text/javascript">
+
+function set_form_fields(elem)
+{
+  var format = elem.options[elem.selectedIndex].value;
+  var header = elem.form._header;
+  var delimiter = elem.form._delimiter;
+  var encoding = elem.form._encoding;
+
+  switch (format)
+  {
+    case 'gmail':
+      encoding.selectedIndex = 0;
+
+    case 'ldif':
+    case 'img':
+      header.disabled = true;
+      delimiter.disabled = true;
+      encoding.disabled = true;
+      break;
+
+    case 'csv':
+      header.disabled = false;
+      delimiter.disabled = false;
+      encoding.disabled = false;
+      break;
+  }
+}
+
+</script>
 </head>
 <body>
 
@@ -68,15 +98,17 @@ if (!empty($GLOBALS['error_msg']))
 <table border="0" cellspacing="1" cellpadding="2"><tr>
 
 <td class="cell">vCard-File</td>
-<td class="cell"><input type="file" size="30" name="_vcards"></td>
+<td class="cell"><input type="file" size="30" name="_vcards">
+  <span class="hint" style="padding-left:1em">(max. <?php echo show_bytes(parse_bytes(ini_get('upload_max_filesize'))); ?>)</span></td>
 
 </tr><tr>
 
 <td class="cell">Format&nbsp;</td>
-<td class="cell"><select name="_format" onchange="this.form._delimiter.disabled=(this.selectedIndex!=1);this.form._header.disabled=(this.selectedIndex!=1)">
+<td class="cell"><select name="_format" onchange="set_form_fields(this)">
   <option value="ldif">LDIF</option>
   <option value="csv">CSV</option>
   <option value="gmail">Gmail (CSV)</option>
+  <option value="img">Images</option>
 </select>
 <select name="_delimiter" disabled>
   <option value="tab">Tab</option>
@@ -85,6 +117,19 @@ if (!empty($GLOBALS['error_msg']))
 </select>
 <input type="checkbox" name="_header" id="checkHeader" value="1" disabled><label for="checkHeader">&nbsp;Add header line</label></td>
 
+</tr><tr>
+
+<td class="cell">Encoding</td>
+<td class="cell">
+  <select name="_encoding" disabled>
+    <option value="UTF-8" selected>Unicode (UTF-8)</option>
+    <option value="ISO-8859-1">Windows Latin-1 (ISO-8859-1)</option>
+    <option value="ISO-8859-15">Windows Latin-9 (ISO-8859-15)</option>
+    <option value="MacRoman">Macintosh (Mac Roman)</option>
+  </select>
+</td>
+
+</tr><tr>
 </tr><tr valign="top">
 
 <td class="cell">Filter</td>

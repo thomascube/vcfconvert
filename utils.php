@@ -42,19 +42,28 @@ function show_bytes($bytes)
 	if ($bytes > 1073741824)
 	{
 		$gb = $bytes/1073741824;
-		$str = sprintf($gb>=10 ? "%dGB" : "%.1fGB", $gb);
+		$str = sprintf($gb >= 10 || $gb-intval($gb) == 0 ? "%d GB" : "%.1f GB", $gb);
 	}
 	else if ($bytes > 1048576)
 	{
 		$mb = $bytes/1048576;
-		$str = sprintf($mb>=10 ? "%dMB" : "%.1fMB", $mb);
+		$str = sprintf($mb >= 10 || $mb-intval($mb) == 0 ? "%d MB" : "%.1f MB", $mb);
 	}
 	else if ($bytes > 1024)
-		$str = sprintf("%dKB",	 round($bytes/1024));
+		$str = sprintf("%d KB", round($bytes/1024));
 	else
-		$str = sprintf('%dB', $bytes);
+		$str = sprintf('%d B', $bytes);
 
 	return $str;
+}
+
+/**
+ * Remove all non-ascii and non-word chars
+ * except . and -
+ */
+function asciiwords($str)
+{
+	return preg_replace(array('/\s+/', '/[^a-z0-9\_\-\.]/i'), array('_',''), $str);
 }
 
 

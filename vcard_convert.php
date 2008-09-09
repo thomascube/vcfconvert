@@ -203,6 +203,9 @@ class vcard_convert extends Contact_Vcard_Parse
 			if (is_array($card['X-JABBER']))
 				$vcard->im['jabber'] = $card['X-JABBER'][0]['value'][0][0];
 
+			if (is_array($card['PHOTO'][0]))
+				$vcard->photo = array('data' => $card['PHOTO'][0]['value'][0][0], 'encoding' => $card['PHOTO'][0]['param']['ENCODING'][0]);
+
 			$this->cards[] = $vcard;
 			}
 		}
@@ -374,6 +377,9 @@ class vcard_convert extends Contact_Vcard_Parse
 		// convert to ISO-8859-1
 		if ($encoding == 'ISO-8859-1' && $this->charset == 'UTF-8' && function_exists('utf8_decode'))
 			$out = utf8_decode($out);
+		// convert to any other charset
+		else if (!empty($encoding) && $encoding !== $this->charset && function_exists('iconv'))
+		  $out = iconv($this->charset, $encoding.'//IGNORE', $out);
 
 		return $out;
 	}
@@ -595,6 +601,25 @@ class vcard_convert extends Contact_Vcard_Parse
 		return $out;
 	}
 
+	/**
+	 * Export all cards images
+	 */
+	function toImages($tmpdir)
+	{
+		$this->export_count = 0;
+		
+		foreach($this->cards as $card)
+		{
+			if ($card->photo)
+			{
+				$fn = asciiwords(strtolower($card->displayname)) . '.jpg';
+				if (file_put_contents($tmpdir.'/'.$fn, base64_decode(preg_replace('/\s+/', '', $card->photo['data']))))
+					$this->export_count++;
+			}
+		}
+
+		return $this->export_count;
+	}
 
 	/**
 	 * Encode one col string for CSV export
