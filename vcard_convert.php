@@ -42,6 +42,7 @@ class vCard
 	var $mobile;
 	var $im = array();
 	var $notes;
+	var $categories;
 }
 
 
@@ -206,6 +207,8 @@ class vcard_convert extends Contact_Vcard_Parse
 			if (is_array($card['PHOTO'][0]))
 				$vcard->photo = array('data' => $card['PHOTO'][0]['value'][0][0], 'encoding' => $card['PHOTO'][0]['param']['ENCODING'][0]);
 
+			$vcard->categories = join(',', (array)$card['CATEGORIES'][0]['value'][0]);
+
 			$this->cards[] = $vcard;
 			}
 		}
@@ -331,7 +334,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= 'Home Street'.$delm.'Home Address 2'.$delm.'Home City'.$delm.'Home State'.$delm.'Home Postal Code'.$delm.'Home Country'.$delm;
 			$out .= 'Business Address'.$delm.'Business Address 2'.$delm.'Business City'.$delm.'Business State'.$delm.'Business Postal Code'.$delm;
 			$out .= 'Business Country'.$delm.'Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm.'Birthday'.$delm;
-			$out .= 'Web Page'.$delm.'Web Page 2'."\n";
+			$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories'."\n";
 		}
 
 		foreach ($this->cards as $card)
@@ -368,7 +371,8 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($card->notes, $delm);
 			$out .= !empty($card->birthday) ? $this->csv_encode(sprintf('%04d-%02d-%02d 00:00:00', $card->birthday['y'], $card->birthday['m'], $card->birthday['d']), $delm) : $delm;
 			$out .= $this->csv_encode($card->work['url'], $delm);
-			$out .= $this->csv_encode($card->home['url'], $delm, false);
+			$out .= $this->csv_encode($card->home['url'], $delm);
+			$out .= $this->csv_encode($card->categories, $delm, false);
 
 			$out .= "\n";
 			$this->export_count++;
