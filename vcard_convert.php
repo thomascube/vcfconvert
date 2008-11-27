@@ -56,6 +56,19 @@ class vcard_convert extends Contact_Vcard_Parse
 	var $file_charset = 'ISO-8859-1';
 	var $charset = 'ISO-8859-1';
 	var $export_count = 0;
+	var $mailonly = false;
+	var $phoneonly = false;
+	var $accesscode = null;
+	
+	
+	/**
+	 * Constructor taking a list of converter properties
+	 */
+	function vcard_convert($p = array())
+	{
+		foreach ($p as $prop => $value)
+			$this->$prop = $value;
+	}
 
 
 	/**
@@ -322,7 +335,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	/**
 	 * Convert the parsed vCard data into CSV format
 	 */
-	function toCSV($delm="\t", $mailonly=false, $add_title=true, $encoding=null)
+	function toCSV($delm="\t", $add_title=true, $encoding=null)
 		{
 		$out = '';
 		$this->export_count = 0;
@@ -339,7 +352,9 @@ class vcard_convert extends Contact_Vcard_Parse
 
 		foreach ($this->cards as $card)
 		{
-			if ($mailonly && empty($card->email) && empty($card->email2))
+			if ($this->mailonly && empty($card->email) && empty($card->email2))
+				continue;
+			if ($this->phoneonly && empty($card->home['phone']) && empty($card->work['phone']) && empty($card->mobile))
 				continue;
 
 			$out .= $this->csv_encode($card->firstname, $delm);
@@ -348,11 +363,11 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($card->nickname, $delm);
 			$out .= $this->csv_encode($card->email, $delm);
 			$out .= $this->csv_encode($card->email2, $delm);
-			$out .= $this->csv_encode($card->home['phone'], $delm);
-			$out .= $this->csv_encode($card->work['phone'], $delm);
-			$out .= $this->csv_encode($card->home['fax'], $delm);
-			$out .= $this->csv_encode($card->pager, $delm);
-			$out .= $this->csv_encode($card->mobile, $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->home['phone']), $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->work['phone']), $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->home['fax']), $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->pager), $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->mobile), $delm);
 			$out .= $this->csv_encode($card->home['addr1'], $delm);
 			$out .= $this->csv_encode($card->home['addr2'], $delm);
 			$out .= $this->csv_encode($card->home['city'], $delm);
@@ -394,7 +409,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	 * @author Thomas Bruederli
 	 * @author Max Plischke <plischke@gmail.com>
 	 */
-	function toGmail($mailonly=false)
+	function toGmail()
 	{
 		$delm = ',';
 		$this->export_count = 0;
@@ -409,7 +424,9 @@ class vcard_convert extends Contact_Vcard_Parse
 
 		foreach ($this->cards as $card)
 		{
-			if ($mailonly && empty($card->email) && empty($card->email2))
+			if ($this->mailonly && empty($card->email) && empty($card->email2))
+				continue;
+			if ($this->phoneonly && empty($card->home['phone']) && empty($card->work['phone']) && empty($card->mobile))
 				continue;
 
 			$home = array($card->home['addr1'], $card->home['city']);
@@ -431,10 +448,10 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode('Home', $delm);
 			$out .= $this->csv_encode('', $delm); // home email ?
 			$out .= $this->csv_encode($im[0], $delm); // IM
-			$out .= $this->csv_encode($card->home['phone'], $delm);
-			$out .= $this->csv_encode($card->mobile, $delm);
-			$out .= $this->csv_encode($card->pager, $delm);
-			$out .= $this->csv_encode($card->home['fax'], $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->home['phone']), $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->mobile), $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->pager), $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->home['fax']), $delm);
 			$out .= $this->csv_encode('', $delm); //
 			$out .= /* $card['title'] . */ $delm;
 			$out .= $this->csv_encode('', $delm); // other
@@ -443,10 +460,10 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode('Work', $delm);
 			$out .= $this->csv_encode($card->email2, $delm); // work email
 			$out .= $this->csv_encode($im[1], $delm); // IM
-			$out .= $this->csv_encode($card->work['phone'], $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->work['phone']), $delm);
 			$out .= $this->csv_encode('', $delm); //
 			$out .= $this->csv_encode('', $delm); //
-			$out .= $this->csv_encode($card->work['fax'], $delm); // work fax
+			$out .= $this->csv_encode($this->normalize_phone($card->work['fax']), $delm); // work fax
 			$out .= $this->csv_encode($card->organization, $delm);
 			$out .= $this->csv_encode($card->jobtitle, $delm); // title
 			$out .= $this->csv_encode($card->department, $delm);
@@ -468,7 +485,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	 *
 	 * @author Kevin Clement <donkjunk@softhome.net>
 	 */
-	function toLibdlusb($mailonly=false)
+	function toLibdlusb()
 	{
 		$delm="; ";
 		$out = '';
@@ -476,7 +493,9 @@ class vcard_convert extends Contact_Vcard_Parse
 
 		foreach ($this->cards as $card)
 		{
-			if ($mailonly && empty($card->email) && empty($card->email2))
+			if ($this->mailonly && empty($card->email) && empty($card->email2))
+				continue;
+			if ($this->phoneonly && empty($card->home['phone']) && empty($card->work['phone']) && empty($card->mobile))
 				continue;
 
 			// a little ugly but this filters out files that only have incompatible data to prevent "blank" files
@@ -489,12 +508,12 @@ class vcard_convert extends Contact_Vcard_Parse
 			if ($card->home['phone'] != '')
 			{
 				$out .= 'Home = ';
-				$out .= $this->csv_encode($card->home['phone'], $delm);
+				$out .= $this->csv_encode($this->normalize_phone($card->home['phone']), $delm);
 			}
 			if ($card->work['phone'] != '')
 			{
 				$out .= 'Work = ';
-				$out .= $this->csv_encode($card->work['phone'], $delm);
+				$out .= $this->csv_encode($this->normalize_phone($card->work['phone']), $delm);
 			}
 			if ($card->email != '')
 			{
@@ -504,7 +523,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			if($card->mobile != '')
 			{
 				$out .= 'Mobile = ';
-				$out .= $this->csv_encode($card->mobile, $delm);
+				$out .= $this->csv_encode($this->normalize_phone($card->mobile), $delm);
 			}
 
 			$out .= "\n";
@@ -522,14 +541,16 @@ class vcard_convert extends Contact_Vcard_Parse
 	/**
 	 * Export cards as Ldif
 	 */
-	function toLdif($mailonly=false)
+	function toLdif()
 	{
 		$out = '';
 		$this->export_count = 0;
 
 		foreach($this->cards as $card)
 		{
-			if ($mailonly && empty($card->email) && empty($card->email2))
+			if ($this->mailonly && empty($card->email) && empty($card->email2))
+				continue;
+			if ($this->phoneonly && empty($card->home['phone']) && empty($card->work['phone']) && empty($card->mobile))
 				continue;
 
 			if (empty($card->displayname))
@@ -550,11 +571,11 @@ class vcard_convert extends Contact_Vcard_Parse
 			if ($card->email2)
 				$a_out['mozillaSecondEmail'] = $card->email2;
 			if ($card->home['phone'])
-				$a_out['homePhone'] = $card->home['phone'];
+				$a_out['homePhone'] = $this->normalize_phone($card->home['phone']);
 			if ($card->mobile)
-				$a_out['mobile'] = $card->mobile;
+				$a_out['mobile'] = $this->normalize_phone($card->mobile);
 			if ($card->pager)
-				$a_out['pager'] = $card->pager;
+				$a_out['pager'] = $this->normalize_phone($card->pager);
 			if ($card->home['addr1'])
 				$a_out['homeStreet'] = $card->home['addr1'];
 			if ($card->home['city'])
@@ -578,7 +599,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			if ($card->work['country'])
 				$a_out['c'] = $card->work['country'];
 			if ($card->work['phone'])
-				$a_out['telephoneNumber'] = $card->work['phone'];
+				$a_out['telephoneNumber'] = $this->normalize_phone($card->work['phone']);
 			if ($card->work['url'])
 				$a_out['workurl'] = $card->work['url'];
 			if ($card->home['url'])
@@ -605,6 +626,78 @@ class vcard_convert extends Contact_Vcard_Parse
 		return $out;
 	}
 
+	/**
+	 * Convert the parsed vCard data into CSV format for FritzBox
+	 *
+	 * @author Thomas Bruederli
+	 * @author Gerd Mueller <gerd@zeltnerweg9.ch>
+	 */
+function toFritzBox()
+		{
+		$delm=";";
+		$out = 'sep='.$delm."\r\n";
+		$this->export_count = 0;
+		
+		$out .= 'Name'.$delm.
+				'TelNumHome'.$delm.'VanityHome'.$delm.'KurzWahlHome'.$delm.
+				'TelNumWork'.$delm.'VanityWork'.$delm.'KurzWahlWork'.$delm.
+				'TelNumMobile'.$delm.'VanityMobile'.$delm.'KurzWahlMobile'.$delm.
+				'Kommentar'.$delm.'Firma'.$delm.'Bild'.$delm.'Kategorie'.$delm.'ImageUrl'.$delm.
+				'Prio'.$delm.'Email'.$delm.'RingTone'.$delm.'RingVol'.
+				"\r\n";
+
+		foreach ($this->cards as $card)
+		{
+			if ($this->mailonly && empty($card->email) && empty($card->email2))
+				continue;
+			if ($this->phoneonly && empty($card->home['phone']) && empty($card->work['phone']) && empty($card->mobile))
+				continue;
+			
+			$name=array();
+			$firstname    = $this->csv_encode($card->firstname, $delm, false);
+			$surname      = $this->csv_encode($card->surname, $delm, false);
+			$organization = $this->csv_encode($card->organization, $delm, false);
+			
+			if (strlen($surname))   $name[] = $surname;
+			if (strlen($firstname)) $name[] = $firstname;
+			if (count($name))
+			{
+				$out .= implode(' ',$name) . $delm;
+			} else
+			{
+				$out .= $organization.$delm;
+			}
+			
+			$out .= $this->csv_encode($this->normalize_phone($card->home['phone']), $delm);
+			$out .= $delm; # Vanity			
+			$out .= $delm; # Kurzwahl			
+			$out .= $this->csv_encode($this->normalize_phone($card->work['phone']), $delm);
+			$out .= $delm; # Vanity			
+			$out .= $delm; # Kurzwahl			
+			$out .= $this->csv_encode($this->normalize_phone($card->mobile), $delm);
+			$out .= $delm; # Vanity			
+			$out .= $delm; # Kurzwahl			
+			$out .= $this->csv_encode($card->notes, $delm);
+			$out .= $organization.$delm;
+			$out .= $delm; # Bild			
+			$out .= $delm; # Kategorie
+			$out .= $delm; # ImageUrl
+			$out .= '1'.$delm; #Prio
+			$out .= $this->csv_encode((empty($card->email)) ? $card->email2 : $card->email, $delm);
+			$out .= $delm; # RingTone
+			$out .= $delm; # RingVol
+
+			$out .= "\r\n";
+			$this->export_count++;
+		}
+
+		// convert to ISO-8859-1
+		if ($this->charset == 'UTF-8' && function_exists('utf8_decode'))
+			$out = utf8_decode($out);
+
+		return $out;
+	}
+	
 	/**
 	 * Export all cards images
 	 */
@@ -650,6 +743,19 @@ class vcard_convert extends Contact_Vcard_Parse
 			return ': ' . base64_encode($this->utf8_convert($str));
 		else
 			return ' ' . $str;
+	}
+
+
+	/**
+	 * Strip Access Code
+	 *
+	 * @access private
+	 */
+	function normalize_phone($phone)
+	{
+		if (strlen($this->accesscode))
+			$phone = preg_replace('/^[\+|00]+' . $this->accesscode . '[- ]*(\d+)/', '0\1', $phone);
+		return $phone;
 	}
 
 

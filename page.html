@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>Online vCard Converter</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="keywords" content="vcard,ldif,csv,gmail,convert,mac,addresses,contacts,export,import" />
 <meta name="description" content="Convert your vCard files to CSV or LDIF in order to import them to Gmail (like A to G) or Outlook" />
 <style type="text/css">
@@ -15,6 +16,13 @@ body {
   
 td.cell {
   background:#efefef;
+  padding-right: 0.6em;
+}
+
+td.label {
+  color: #333;
+  font-weight: bold;
+  text-align: right;
 }
 
 .title {
@@ -71,6 +79,15 @@ function set_form_fields(elem)
       delimiter.disabled = false;
       encoding.disabled = false;
       break;
+
+    case 'fritzbox':
+      encoding.selectedIndex = 1;
+      delimiter.selectedIndex = 1;
+      header.checked = true;
+      header.disabled = true;
+      delimiter.disabled = true;
+      encoding.disabled = true;
+      break;
   }
 }
 
@@ -99,17 +116,18 @@ if (!empty($GLOBALS['error_msg']))
 
 <table border="0" cellspacing="1" cellpadding="2"><tr>
 
-<td class="cell">vCard-File</td>
+<td class="cell label">vCard-File:</td>
 <td class="cell"><input type="file" size="30" name="_vcards">
   <span class="hint" style="padding-left:1em">(max. <?php echo show_bytes(parse_bytes(ini_get('upload_max_filesize'))); ?>)</span></td>
 
 </tr><tr>
 
-<td class="cell">Format&nbsp;</td>
-<td class="cell"><select name="_format" onchange="set_form_fields(this)">
+<td class="cell label">Format:</td>
+<td class="cell"><select name="_format" onChange="set_form_fields(this)">
   <option value="ldif">LDIF</option>
   <option value="csv">CSV</option>
   <option value="gmail">Gmail (CSV)</option>
+  <option value="fritzbox">FritzBox (CSV)</option>
   <option value="img">Images</option>
 </select>
 <select name="_delimiter" disabled>
@@ -121,7 +139,7 @@ if (!empty($GLOBALS['error_msg']))
 
 </tr><tr>
 
-<td class="cell">Encoding</td>
+<td class="cell label">Encoding:</td>
 <td class="cell">
   <select name="_encoding" disabled>
     <option value="UTF-8" selected>Unicode (UTF-8)</option>
@@ -131,11 +149,21 @@ if (!empty($GLOBALS['error_msg']))
   </select>
 </td>
 
-</tr><tr>
 </tr><tr valign="top">
 
-<td class="cell">Filter</td>
-<td class="cell"><input type="checkbox" name="_mailonly" id="checkMailonly" value="1" checked><label for="checkMailonly">&nbsp;vCards with e-mail only</label></td>
+<td class="cell label">Filter:</td>
+<td class="cell">
+  <input type="checkbox" name="_mailonly" id="checkMailonly" value="1"><label for="checkMailonly">&nbsp;vCards with e-mail only</label><br />
+  <input type="checkbox" name="_phoneonly" id="checkPhoneonly" value="1"><label for="checkPhoneonly">&nbsp;vCards with phone numbers only</label>
+</td>
+
+</tr><tr>
+
+<td class="cell label">Modifications:</td>
+<td class="cell">
+  <input type="text" name="_accesscode" id="accessCode" style="width:30px;">&nbsp;
+  <label for="accessCode">replace this International Access Code with &laquo;0&raquo;</label>
+</td>
 
 </tr><tr>
 
@@ -152,7 +180,7 @@ if (!empty($GLOBALS['error_msg']))
 It was created for personal needs and is now provided on a private and non commercial basis.
 The uploaded file will not be stored permanently nor will the converted addresses be kept on the server.</p>
 
-<p>You can also <a href="http://labs.brotherli.ch/vcfconvert/vcfconvert-0.8.1.tar.gz">download</a> the script
+<p>You can also <a href="http://labs.brotherli.ch/vcfconvert/vcfconvert-0.8.2.tar.gz">download</a> the script
 and run it locally. All you need is a shell with PHP installed.</p>
 
 <p>For questions about privacy and security, please contact endless&#x0040;brotherli.&#099;&#104;</p>
