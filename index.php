@@ -3,9 +3,9 @@
 /*
  +-----------------------------------------------------------------------+
  | vCard to LDIF/CSV Converter                                           |
- | Version 0.8.2                                                         |
+ | Version 0.8.3                                                         |
  |                                                                       |
- | Copyright (C) 2006-2008, Thomas Bruederli - Switzerland               |
+ | Copyright (C) 2006-2009, Thomas Bruederli - Switzerland               |
  | Licensed under the GNU GPL                                            |
  |                                                                       |
  | Redistribution and use in source and binary forms, with or without    |

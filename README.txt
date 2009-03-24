@@ -15,19 +15,19 @@ Just copy the files anywhere on your disk, open a terminal and type the
 following commands:
 
 > cd /path/to/vcfconvert
-> ./convert -f ldif -o destination_file.ldif source_file.vcf
+> ./vcfconvert.sh -f ldif -o destination_file.ldif source_file.vcf
 or
-> ./convert -hv -f csv -d ";" -o destination_file.csv source_file.vcf
+> ./vcfconvert.sh -hv -f csv -d ";" -o destination_file.csv source_file.vcf
 
 To get information about optinal parameters, type
-> ./convert help
+> ./vcfconvert.sh help
 
 This script is licensed under the GNU GPL a copy of which has been provided.
 Copies of this license can also be found at
 http://www.fsf.org/licensing/licenses/gpl.txt
 
 For any bug reports or feature requests please visit my website 
-http://labs.brotherli.ch or send a message to endless@brotherli.ch
+http://labs.brotherli.ch or send a message to fuzzy@brotherli.ch
 
 
 ** Note from Kevin on libdlusb compatibility **
