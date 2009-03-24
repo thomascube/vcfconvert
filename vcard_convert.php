@@ -166,26 +166,34 @@ class vcard_convert extends Contact_Vcard_Parse
 			// extract urls
 			if (is_array($card['URL']))
 				$this->parse_url($card['URL'], $vcard);
-			else if (is_array($card['ITEM1.URL']))
-				$this->parse_url($card['ITEM1.URL'], $vcard);
-			if (is_array($card['ITEM2.URL']))
-				$this->parse_url($card['ITEM2.URL'], $vcard);
 
 			// extract addresses
 			if (is_array($card['ADR']))
 				$this->parse_adr($card['ADR'], $vcard);
-			else if (is_array($card['ITEM1.ADR']))   // this is from Apple's Address Book
-				$this->parse_adr($card['ITEM1.ADR'], $vcard);
-			if (is_array($card['ITEM2.ADR']))   // this is from Apple's Address Book
-				$this->parse_adr($card['ITEM2.ADR'], $vcard);
 
 			// extract phones
 			if (is_array($card['TEL']))
 				$this->parse_tel($card['TEL'], $vcard);
-			else if (is_array($card['ITEM1.TEL']))
-				$this->parse_tel($card['ITEM1.TEL'], $vcard);  // this is from Apple's Address Book
-			if (is_array($card['ITEM2.TEL']))
-				$this->parse_tel($card['ITEM2.TEL'], $vcard);  // this is from Apple's Address Book
+
+			// read Apple Address Book proprietary fields
+			for ($hit = 0, $n = 1; $n <= 9; $n++)
+			{
+				$prefix = "ITEM".$n;
+				if (is_array($card["$prefix.TEL"])) {
+					$this->parse_tel($card["$prefix.TEL"], $vcard);
+					$hit++;
+				}
+				if (is_array($card["$prefix.URL"])) {
+					$this->parse_url($card["$prefix.URL"], $vcard);
+					$hit++;
+				}
+				if (is_array($card["$prefix.ADR"])) {
+					$this->parse_adr($card["$prefix.ADR"], $vcard);
+					$hit++;
+				}
+				if (!$hit)
+					break;
+			}
 
 			// extract mail addresses
 			$a_email = array();
@@ -346,7 +354,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= 'Home Phone'.$delm.'Business Phone'.$delm.'Home Fax'.$delm.'Pager'.$delm.'Mobile Phone'.$delm;
 			$out .= 'Home Street'.$delm.'Home Address 2'.$delm.'Home City'.$delm.'Home State'.$delm.'Home Postal Code'.$delm.'Home Country'.$delm;
 			$out .= 'Business Address'.$delm.'Business Address 2'.$delm.'Business City'.$delm.'Business State'.$delm.'Business Postal Code'.$delm;
-			$out .= 'Business Country'.$delm.'Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm.'Birthday'.$delm;
+			$out .= 'Business Country'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm.'Birthday'.$delm;
 			$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories'."\n";
 		}
 
@@ -380,7 +388,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($card->work['state'], $delm);
 			$out .= $this->csv_encode($card->work['zipcode'], $delm);
 			$out .= $this->csv_encode($card->work['country'], $delm);
-			$out .= /* $this->csv_encode($card->title, $delm) . */ $delm;
+			$out .= $this->csv_encode($card->jobtitle, $delm) . $delm;
 			$out .= $this->csv_encode($card->department, $delm);
 			$out .= $this->csv_encode($card->organization, $delm);
 			$out .= $this->csv_encode($card->notes, $delm);
