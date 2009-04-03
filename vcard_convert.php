@@ -388,7 +388,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($card->work['state'], $delm);
 			$out .= $this->csv_encode($card->work['zipcode'], $delm);
 			$out .= $this->csv_encode($card->work['country'], $delm);
-			$out .= $this->csv_encode($card->jobtitle, $delm) . $delm;
+			$out .= $this->csv_encode($card->jobtitle, $delm);
 			$out .= $this->csv_encode($card->department, $delm);
 			$out .= $this->csv_encode($card->organization, $delm);
 			$out .= $this->csv_encode($card->notes, $delm);
