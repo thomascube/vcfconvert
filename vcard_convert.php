@@ -92,11 +92,15 @@ class vcard_convert extends Contact_Vcard_Parse
 	 */
 	function fromText($text, $decode_qp = true)
 	{
-		if ($encoding = vcard_convert::get_charset($text))
+		// check if charsets are specified (usually vcard version < 3.0 but this is not reliable)
+		if (preg_match('/charset=/i', substr($text, 0, 2048)))
+			$this->charset = null;
+		// try to detect charset of the whole file
+		else if ($encoding = vcard_convert::get_charset($text))
 			$this->charset = $this->file_charset = $encoding;
 
 		// convert document to UTF-8
-		if ($this->charset != 'UTF-8' && $this->charset != 'ISO-8859-1')
+		if (isset($this->charset) && $this->charset != 'UTF-8' && $this->charset != 'ISO-8859-1')
 		{
 			$text = $this->utf8_convert($text);
 			$this->charset = 'UTF-8';
@@ -106,6 +110,11 @@ class vcard_convert extends Contact_Vcard_Parse
 		if (!empty($this->parsed))
 		{
 			$this->normalize();
+			
+			// after normalize() all values should be UTF-8
+			if (!isset($this->charset))
+				$this->charset = 'UTF-8';
+				
 			return count($this->cards);
 		}
 		else
@@ -125,6 +134,10 @@ class vcard_convert extends Contact_Vcard_Parse
 		{
 			$vcard = new vCard;
 			$vcard->version = (float)$card['VERSION'][0]['value'][0][0];
+			
+			// convert all values to UTF-8 according to their charset param
+			if (!isset($this->charset))
+				$card = $this->card2utf8($card);
 
 			// extract names
 			$names = $card['N'][0]['value'];
@@ -765,17 +778,51 @@ function toFritzBox()
 			$phone = preg_replace('/^[\+|00]+' . $this->accesscode . '[- ]*(\d+)/', '0\1', $phone);
 		return $phone;
 	}
-
-
+	
+	
 	/**
-	 * Convert a string to UTF-8
+	 * Convert a whole vcard (array) to UTF-8.
+	 * Each member value that has a charset parameter will be converted.
 	 *
 	 * @access private
 	 */
-	function utf8_convert($str, $from=null)
+	function card2utf8($card)
+	{
+		foreach ($card as $key => $node)
+		{
+			foreach ($node as $i => $subnode)
+			{
+				if ($subnode['param']['CHARSET'] && ($charset = $subnode['param']['CHARSET'][0]))
+				{
+					$card[$key][$i]['value'] = $this->utf8_convert($subnode['value'], $charset);
+					unset($card[$key][$i]['param']['CHARSET']);
+				}
+			}
+		}
+		
+		return $card;
+	}
+
+	/**
+	 * Convert the given input to UTF-8.
+	 * If it's an array, all values will be converted recursively.
+	 *
+	 * @access private
+	 */
+	function utf8_convert($in, $from=null)
 	{
 		if (!$from)
 			$from = $this->charset;
+		
+		// recursively convert all array values
+		if (is_array($in))
+		{
+			foreach ($in as $key => $value)
+				$in[$key] = $this->utf8_convert($value, $from);
+			return $in;
+		}
+		else
+			$str = $in;
 
 		// try to convert to UTF-8
 		if ($from != 'UTF-8')
