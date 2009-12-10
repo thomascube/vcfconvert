@@ -189,23 +189,18 @@ class vcard_convert extends Contact_Vcard_Parse
 				$this->parse_tel($card['TEL'], $vcard);
 
 			// read Apple Address Book proprietary fields
-			for ($hit = 0, $n = 1; $n <= 9; $n++)
+			for ($n = 1; $n <= 9; $n++)
 			{
 				$prefix = "ITEM".$n;
 				if (is_array($card["$prefix.TEL"])) {
 					$this->parse_tel($card["$prefix.TEL"], $vcard);
-					$hit++;
 				}
 				if (is_array($card["$prefix.URL"])) {
 					$this->parse_url($card["$prefix.URL"], $vcard);
-					$hit++;
 				}
 				if (is_array($card["$prefix.ADR"])) {
 					$this->parse_adr($card["$prefix.ADR"], $vcard);
-					$hit++;
 				}
-				if (!$hit)
-					break;
 			}
 
 			// extract mail addresses
