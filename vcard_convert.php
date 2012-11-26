@@ -5,7 +5,7 @@
  | vCard to LDIF/CSV Converter Class                                     |
  | extends the PEAR Contact_Vcard_Parse Class                            |
  |                                                                       |
- | Copyright (C) 2006-2011, Thomas Bruederli - Switzerland               |
+ | Copyright (C) 2006-2012, Thomas Bruederli - Switzerland               |
  | Licensed under the GNU GPL                                            |
  |                                                                       |
  +-----------------------------------------------------------------------+
