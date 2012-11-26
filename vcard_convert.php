@@ -158,15 +158,26 @@ class vcard_convert extends Contact_Vcard_Parse
 			// extract notes
 			$vcard->notes = isset($card['NOTE']) ? ltrim($card['NOTE'][0]['value'][0][0]) : '';
 
-			// extract birthday
-			if(is_array($card['BDAY']))
+			// extract birthday and anniversary
+			foreach (array('BDAY' => 'birthday', 'ANNIVERSARY' => 'anniversary', 'X-ANNIVERSARY' => 'anniversary') as $vcf => $propname)
 			{
-				$temp = preg_replace('/[\-\.\/]/', '', $card['BDAY'][0]['value'][0][0]);
-				$vcard->birthday = array(
-					'y' => substr($temp,0,4),
-					'm' => substr($temp,4,2),
-					'd' => substr($temp,6,2));
+				if (is_array($card[$vcf]))
+				{
+					$temp = preg_replace('/[\-\.\/]/', '', $card[$vcf][0]['value'][0][0]);
+					$vcard->$propname = array(
+						'y' => substr($temp,0,4),
+						'm' => substr($temp,4,2),
+						'd' => substr($temp,6,2));
+				}
 			}
+
+			if (is_array($card['GENDER']))
+				$vcard->gender = $card['GENDER'][0]['value'][0][0];
+			else if (is_array($card['X-GENDER']))
+				$vcard->gender = $card['X-GENDER'][0]['value'][0][0];
+
+			if (!empty($vcard->gender))
+				$vcard->gender = strtoupper($vcard->gender[0]);
 
 			// extract job_title
 			if (is_array($card['TITLE']))
@@ -406,7 +417,8 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= 'Home Phone'.$delm.'Business Phone'.$delm.'Home Fax'.$delm.'Business Fax'.$delm.'Pager'.$delm.'Mobile Phone'.$delm;
 			$out .= 'Home Street'.$delm.'Home Address 2'.$delm.'Home City'.$delm.'Home State'.$delm.'Home Postal Code'.$delm.'Home Country'.$delm;
 			$out .= 'Business Address'.$delm.'Business Address 2'.$delm.'Business City'.$delm.'Business State'.$delm.'Business Postal Code'.$delm;
-			$out .= 'Business Country'.$delm.'Country Code'.$delm.'Related name'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm.'Birthday'.$delm;
+			$out .= 'Business Country'.$delm.'Country Code'.$delm.'Related name'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm.
+			$out .= 'Birthday'.$delm.'Anniversary'.$delm.'Gender'.$delm;
 			$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories'."\n";
 		}
 
@@ -449,6 +461,8 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($card->organization, $delm);
 			$out .= $this->csv_encode($card->notes, $delm);
 			$out .= !empty($card->birthday) ? $this->csv_encode(sprintf('%04d-%02d-%02d 00:00:00', $card->birthday['y'], $card->birthday['m'], $card->birthday['d']), $delm) : $delm;
+			$out .= !empty($card->anniversary) ? $this->csv_encode(sprintf('%04d-%02d-%02d', $card->anniversary['y'], $card->anniversary['m'], $card->anniversary['d']), $delm) : $delm;
+			$out .= $this->csv_encode($card->gender, $delm);
 			$out .= $this->csv_encode($card->work['url'], $delm);
 			$out .= $this->csv_encode($card->home['url'], $delm);
 			$out .= $this->csv_encode($card->categories, $delm, false);
@@ -670,8 +684,10 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['homeurl'] = $card->home['url'];
 			if ($card->notes)
 				$a_out['description'] = $card->notes;
-			if ($card->birthday)
+			if ($card->birthday) {
+				$a_out['birthyear'] = $card->birthday['y'];
 				$a_out['mozillaCustom1'] = sprintf("%04d-%02d-%02d", $card->birthday['y'], $card->birthday['m'], $card->birthday['d']);
+			}
 
 			// compose ldif output
 			foreach ($a_out as $key => $val)
