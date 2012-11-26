@@ -403,7 +403,7 @@ class vcard_convert extends Contact_Vcard_Parse
 		if ($add_title)
 		{
 			$out .= 'First Name'.$delm.'Last Name'.$delm.'Display Name'.$delm.'Nickname'.$delm.'E-mail Address'.$delm.'E-mail 2 Address'.$delm.'E-mail 3 Address'.$delm;
-			$out .= 'Home Phone'.$delm.'Business Phone'.$delm.'Home Fax'.$delm.'Pager'.$delm.'Mobile Phone'.$delm;
+			$out .= 'Home Phone'.$delm.'Business Phone'.$delm.'Home Fax'.$delm.'Business Fax'.$delm.'Pager'.$delm.'Mobile Phone'.$delm;
 			$out .= 'Home Street'.$delm.'Home Address 2'.$delm.'Home City'.$delm.'Home State'.$delm.'Home Postal Code'.$delm.'Home Country'.$delm;
 			$out .= 'Business Address'.$delm.'Business Address 2'.$delm.'Business City'.$delm.'Business State'.$delm.'Business Postal Code'.$delm;
 			$out .= 'Business Country'.$delm.'Country Code'.$delm.'Related name'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm.'Birthday'.$delm;
@@ -427,6 +427,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($this->normalize_phone($card->home['phone']), $delm);
 			$out .= $this->csv_encode($this->normalize_phone($card->work['phone']), $delm);
 			$out .= $this->csv_encode($this->normalize_phone($card->home['fax']), $delm);
+			$out .= $this->csv_encode($this->normalize_phone($card->work['fax']), $delm);
 			$out .= $this->csv_encode($this->normalize_phone($card->pager), $delm);
 			$out .= $this->csv_encode($this->normalize_phone($card->mobile), $delm);
 			$out .= $this->csv_encode($card->home['addr1'], $delm);
