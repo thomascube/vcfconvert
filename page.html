@@ -3,7 +3,7 @@
 <head>
 <title>Online vCard Converter</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<meta name="keywords" content="vcard,vcf,ldif,csv,gmail,convert,mac,addresses,contacts,export,import" />
+<meta name="keywords" content="vcard,vcf,ldif,ldap,csv,gmail,convert,mac,addresses,contacts,export,import" />
 <meta name="description" content="Convert your vCard files to CSV or LDIF in order to import them to Gmail (like A to G) or Outlook" />
 <style type="text/css">
 
@@ -61,6 +61,7 @@ function set_form_fields(elem)
   var header = elem.form._header;
   var delimiter = elem.form._delimiter;
   var encoding = elem.form._encoding;
+  var dn = elem.form._dn;
 
   switch (format)
   {
@@ -72,12 +73,21 @@ function set_form_fields(elem)
       header.disabled = true;
       delimiter.disabled = true;
       encoding.disabled = true;
+      dn.disabled = true;
+      break;
+
+    case 'ldap':
+      header.disabled = true;
+      delimiter.disabled = true;
+      encoding.disabled = true;
+      dn.disabled = false;
       break;
 
     case 'csv':
       header.disabled = false;
       delimiter.disabled = false;
       encoding.disabled = false;
+      dn.disabled = true;
       break;
 
     case 'fritzbox':
@@ -87,8 +97,12 @@ function set_form_fields(elem)
       header.disabled = true;
       delimiter.disabled = true;
       encoding.disabled = true;
+      dn.disabled = true;
       break;
   }
+
+  var rootdnrow = document.getElementById('ldaprootdn');
+  rootdnrow.style.display = dn.disabled ? 'none' : (document.all && !window.opera ? 'block' : 'table-row');
 }
 
 </script>
@@ -124,7 +138,8 @@ if (!empty($GLOBALS['error_msg']))
 
 <td class="cell label">Format:</td>
 <td class="cell"><select name="_format" onChange="set_form_fields(this)">
-  <option value="ldif">LDIF</option>
+  <option value="ldif">LDIF (Mozilla Thunderbird)</option>
+  <option value="ldap">LDIF (Import to LDAP server)</option>
   <option value="csv">CSV</option>
   <option value="gmail">Gmail (CSV)</option>
   <option value="fritzbox">FritzBox (CSV)</option>
@@ -136,6 +151,15 @@ if (!empty($GLOBALS['error_msg']))
   <option value=",">Comma</option>
 </select>
 <input type="checkbox" name="_header" id="checkHeader" value="1" disabled><label for="checkHeader">&nbsp;Add header line</label></td>
+
+</tr><tr id="ldaprootdn" style="display:none">
+
+<td class="cell label">Root DN:</td>
+<td class="cell">
+  <input type="text" name="_dn" id="dnID" style="width:30em;" disabled>&nbsp;
+  <label for="accessCode"><br>Use as Root DN LDAP identifier, to add it at the end of the "dn:" LDIF line <br>(for example: dc=Users, dc=nodomain)</label>
+  <span class="hint" style="padding-left:1em">(max. 255 chars)</span>
+</td>
 
 </tr><tr>
 
@@ -161,7 +185,7 @@ if (!empty($GLOBALS['error_msg']))
 
 <td class="cell label">Modifications:</td>
 <td class="cell">
-  <input type="text" name="_accesscode" id="accessCode" style="width:30px;">&nbsp;
+  <input type="text" name="_accesscode" id="accessCode" style="width:3em;">&nbsp;
   <label for="accessCode">replace this International Access Code with &laquo;0&raquo;</label>
 </td>
 

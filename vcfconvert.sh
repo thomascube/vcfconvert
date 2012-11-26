@@ -49,8 +49,9 @@ function get_args()
 // read commandline arguments
 $opt = get_args();
 $usage = <<<EOF
-Usage: convert [-himpv] [-d delimiter] [-o output_file] -f format file
-  -f Target format (ldif,csv,gmail,libdlusb)
+Usage: convert [-himpv] [-d delimiter] [-n identifier] [-o output_file] -f format file
+  -f Target format (ldif,ldap,csv,gmail,libdlusb)
+  -n LDAP identifier added to dn:
   -o Output file (write to stdout by default)
   -d CSV col delimiter
   -h Include header line in CSV output
@@ -85,6 +86,12 @@ if ($conv->fromFile($file))
 		
 		if ($format == 'ldif')
 			$out = $conv->toLdif();
+
+		else if ($format == 'ldap')
+		{
+			$identifier = $opt['n'];
+			$out = $conv->toLdif($identifier);
+		}
 
 		else if ($format == 'gmail')
 			$out = $conv->toGmail();

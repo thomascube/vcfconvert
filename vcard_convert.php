@@ -46,6 +46,8 @@ class vCard
 	var $im = array();
 	var $notes;
 	var $categories;
+	var $uid;
+	var $photo;
 }
 
 
@@ -183,6 +185,10 @@ class vcard_convert extends Contact_Vcard_Parse
 			if (is_array($card['TITLE']))
 				$vcard->jobtitle = $card['TITLE'][0]['value'][0][0];
 
+			// extract UID
+			if (is_array($card['UID']))
+				$vcard->uid = $card['UID'][0]['value'][0][0];
+
 			// extract org and dep
 			if (is_array($card['ORG']) && ($temp = $card['ORG'][0]['value']))
 			{
@@ -261,7 +267,7 @@ class vcard_convert extends Contact_Vcard_Parse
 				$vcard->im['jabber'] = $card['X-JABBER'][0]['value'][0][0];
 
 			if (is_array($card['PHOTO'][0]))
-				$vcard->photo = array('data' => $card['PHOTO'][0]['value'][0][0], 'encoding' => $card['PHOTO'][0]['param']['ENCODING'][0]);
+				$vcard->photo = array('data' => $card['PHOTO'][0]['value'][0][0], 'encoding' => $card['PHOTO'][0]['param']['ENCODING'][0], 'type' => $card['PHOTO'][0]['param']['TYPE'][0]);
 
 			$vcard->categories = join(',', (array)$card['CATEGORIES'][0]['value'][0]);
 
@@ -617,9 +623,9 @@ class vcard_convert extends Contact_Vcard_Parse
 
 
 	/**
-	 * Export cards as Ldif
+	 * Export cards as Ldif/LDAP Ldif
 	 */
-	function toLdif()
+	function toLdif($identifier="")
 	{
 		$out = '';
 		$this->export_count = 0;
@@ -631,19 +637,59 @@ class vcard_convert extends Contact_Vcard_Parse
 			if ($this->phoneonly && empty($card->home['phone']) && empty($card->work['phone']) && empty($card->mobile))
 				continue;
 
-			if (empty($card->displayname))
-				$card->displayname = $card->firstname.' '.$card->surname;
+			// If we will export LDIF for an LDAP server, some checks and tweaks are needed
+			if ($identifier != "")
+			{
+				$card->displayname = trim($card->displayname);
+
+				// Generate a random UID for LDAP Ldif if not present
+				if (empty($card->uid))
+					$card->uid = uniqid('card-id-');
+
+				if (empty($card->displayname))
+					$card->displayname = trim($card->firstname.' '.$card->surname);
+
+				if (empty($card->displayname))
+					$card->displayname = trim($card->nickname);
+
+				if (empty($card->displayname))
+					$card->displayname = trim($card->organization);
+
+				if (empty($card->displayname))
+					$card->displayname = $card->uid;
+
+				if (empty($card->surname))
+					$card->surname = $card->displayname;
+			}
 
 			$a_out = array();
-			$a_out['dn'] = sprintf("cn=%s,mail=%s", $card->displayname, $card->email);
-			$a_out['objectclass'] = array('top', 'person', 'organizationalPerson', 'inetOrgPerson', 'mozillaAbPersonObsolete');
+			
+			if ($identifier == "")
+				$a_out['dn'] = sprintf("cn=%s,mail=%s", $card->displayname, $card->email);
+			else
+				$a_out['dn'] = sprintf("uid=%s, %s", $card->uid, $identifier);
+				
+			$a_out['objectclass'] = array('top', 'person', 'organizationalPerson', 'inetOrgPerson', 'mozillaAbPerson');
 
-			$a_out['givenName'] = $card->firstname;
-			$a_out['sn'] = $card->surname;
 			$a_out['cn'] = $card->displayname;
-			$a_out['mail'] = $card->email;
-			$a_out['modifytimestamp'] = '0Z';
-
+			$a_out['sn'] = $card->surname;
+			
+			if ($card->uid)
+				$a_out['uid'] = $card->uid;			
+			if ($card->firstname)
+				$a_out['givenName'] = $card->firstname;
+			if ($card->title)
+				$a_out['title'] = $card->title;
+			if ($card->jobtitle)
+				$a_out['employeeType'] = $card->jobtitle;
+			if ($card->email)
+				$a_out['mail'] = $card->email;			
+			// Get the binary for the photo of type jpeg
+			// FIXME: ? According to the specs, only JFIF formats should be used
+			// but some clients read even PNG from the jpegPhoto attr. Should we be
+			// so restrictive here?
+			if ($card->photo && strtolower($card->photo['type']) == "jpeg")
+				$a_out['jpegPhoto'] = base64_decode(preg_replace('/\s+/', '', $card->photo['data']));
 			if ($card->nickname)
 				$a_out['mozillaNickname'] = $card->nickname;
 			if ($card->email2)
@@ -655,7 +701,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			if ($card->pager)
 				$a_out['pager'] = $this->normalize_phone($card->pager);
 			if ($card->home['addr1'])
-				$a_out['homeStreet'] = $card->home['addr1'];
+				$a_out['mozillaHomeStreet'] = $card->home['addr1'];
 			if ($card->home['city'])
 				$a_out['mozillaHomeLocalityName'] = $card->home['city'];
 			if ($card->home['state'])
@@ -666,6 +712,8 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['mozillaHomeCountryName'] = $card->home['country'];
 			if ($card->organization)
 				$a_out['o'] = $card->organization;
+			if ($card->department)
+				$a_out['departmentNumber'] = $card->department;
 			if ($card->work['addr1'])
 				$a_out['street'] = $card->work['addr1'];
 			if ($card->work['city'])
@@ -678,10 +726,14 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['c'] = $card->work['country'];
 			if ($card->work['phone'])
 				$a_out['telephoneNumber'] = $this->normalize_phone($card->work['phone']);
+			if ($card->work['fax'])
+				$a_out['fax'] = $this->normalize_phone($card->work['fax']);
+			else if ($card->home['fax'])
+				$a_out['fax'] = $this->normalize_phone($card->home['fax']);
 			if ($card->work['url'])
-				$a_out['workurl'] = $card->work['url'];
+				$a_out['mozillaWorkUrl'] = $card->work['url'];
 			if ($card->home['url'])
-				$a_out['homeurl'] = $card->home['url'];
+				$a_out['mozillaHomeUrl'] = $card->home['url'];
 			if ($card->notes)
 				$a_out['description'] = $card->notes;
 			if ($card->birthday) {
@@ -789,9 +841,35 @@ function toFritzBox()
 		{
 			if ($card->photo)
 			{
-				$fn = asciiwords(strtolower($card->displayname)) . '.jpg';
-				if (file_put_contents($tmpdir.'/'.$fn, base64_decode(preg_replace('/\s+/', '', $card->photo['data']))))
-					$this->export_count++;
+				$ext = strtolower($card->photo['type']);
+				if ($ext == "jpeg" || $ext == "png")
+				{
+					if ($ext == "jpeg")
+						$ext = "jpg";
+					
+					// Try to guess the displayname of the card if it is empty
+					$card->displayname = trim($card->displayname);
+				
+					if (empty($card->displayname))
+						$card->displayname = trim($card->firstname.' '.$card->surname);
+					if (empty($card->displayname))
+						$card->displayname = trim($card->nickname);
+					if (empty($card->displayname))
+						$card->displayname = trim($card->organization);
+
+					// A FIX: Since some cards may give no (or identical) filenames
+					// after the cleanup by asciiwords, always generate a random UID
+					// for card's file name
+					$fn = asciiwords(strtolower($card->displayname));
+					if (empty($fn) || preg_match("/^[_ -]+$/",$fn) || preg_match("/^-/",$fn))
+						$fn = uniqid('card-id-');
+					else
+						$fn .= uniqid('-card-id-');
+
+					$operation = file_put_contents($tmpdir.'/'.$fn.'.'.$ext, base64_decode(preg_replace('/\s+/', '', $card->photo['data'])));
+					if ($operation !== False)
+						$this->export_count++;
+				}
 			}
 		}
 
@@ -819,10 +897,14 @@ function toFritzBox()
 	function ldif_encode($str)
 	{
 		// base64-encode all values that contain non-ascii chars
+		// $str is already UTF-encoded after the VCard is read in $card
 		if (preg_match('/[^\x09\x20-\x7E]/', $str))
-			return ': ' . base64_encode($this->utf8_convert($str));
+			$str = ': ' . base64_encode($str);
 		else
-			return ' ' . $str;
+			$str = ' ' . $str;
+			
+		// Make long lines splited according to LDIF specs to a new line starting with [:space:]
+		return preg_replace('/\n $/', '', chunk_split($str, 76, "\n "));
 	}
 
 
@@ -870,6 +952,9 @@ function toFritzBox()
 	 */
 	function utf8_convert($in, $from=null)
 	{
+		// Sometimes the charset in $from is in quotes, so clean it up
+		$from = trim($from,'"');
+		
 		if (!$from)
 			$from = $this->charset;
 		

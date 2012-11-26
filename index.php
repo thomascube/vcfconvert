@@ -3,9 +3,9 @@
 /*
  +-----------------------------------------------------------------------+
  | vCard to LDIF/CSV Converter                                           |
- | Version 0.8.6                                                         |
+ | Version 0.8.7                                                         |
  |                                                                       |
- | Copyright (C) 2006-2011, Thomas Bruederli - Switzerland               |
+ | Copyright (C) 2006-2012, Thomas Bruederli - Switzerland               |
  | Licensed under the GNU GPL                                            |
  |                                                                       |
  | Redistribution and use in source and binary forms, with or without    |
@@ -77,6 +77,13 @@ if (!empty($_FILES['_vcards']))
 			print $conv->toLdif();
 			exit;
 		}
+		else if ($_POST['_format'] == 'ldap')
+		{
+			// Clean the input dn modifier from dangerous chars
+			$dnID = substr(preg_replace('/[^\da-z=,_ -]/i', '', $_POST['_dn']), 0, 255);
+			print $conv->toLdif($dnID ? $dnID : "");
+			exit;
+		}
 		else if ($_POST['_format'] == 'gmail')
 		{
 			print $conv->toGmail();
@@ -97,7 +104,7 @@ if (!empty($_FILES['_vcards']))
 		// extract all images from the vcard file
 		else if ($_POST['_format'] == 'img')
 		{
-			mkdir($tmpdir = './tmp/'.md5(mt_rand()));
+			mkdir($tmpdir = __DIR__ . '/tmp/'.md5(mt_rand())); // Diretory safe naming
 			if ($conv->toImages($tmpdir))
 			{
 				shell_exec('cd ' . escapeshellarg($tmpdir) . "; zip $fname *");
