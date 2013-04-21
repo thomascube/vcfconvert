@@ -391,7 +391,8 @@ class vcard_convert extends Contact_Vcard_Parse
 				$vcard->pager = $tel['value'][0][0];
 			else if (in_array_nc("CELL", $tel['param']['TYPE']))
 				$vcard->mobile = $tel['value'][0][0];
-			else if (in_array_nc("HOME", $tel['param']['TYPE']) || in_array_nc("PREF", $tel['param']['TYPE']))
+			else if (in_array_nc("HOME", $tel['param']['TYPE']) ||
+				(in_array_nc("PREF", $tel['param']['TYPE']) && !in_array_nc("WORK", $tel['param']['TYPE']) && empty($vcard->home['phone'])))
 			{
 				if (in_array_nc("FAX", $tel['param']['TYPE']))
 					$vcard->home['fax'] = $tel['value'][0][0];
