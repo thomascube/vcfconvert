@@ -478,14 +478,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$this->export_count++;
 		}
 
-		// convert to ISO-8859-1
-		if ($encoding == 'ISO-8859-1' && $this->charset == 'UTF-8' && function_exists('utf8_decode'))
-			$out = utf8_decode($out);
-		// convert to any other charset
-		else if (!empty($encoding) && $encoding !== $this->charset && function_exists('iconv'))
-		  $out = iconv($this->charset, $encoding.'//IGNORE', $out);
-
-		return $out;
+		return $this->charset_convert($out, $encoding);
 	}
 	
 	/**
@@ -626,7 +619,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	/**
 	 * Export cards as Ldif/LDAP Ldif
 	 */
-	function toLdif($identifier="")
+	function toLdif($identifier="", $encoding="UTF-8")
 	{
 		$out = '';
 		$this->export_count = 0;
@@ -676,7 +669,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$a_out['sn'] = $card->surname;
 			
 			if ($card->uid)
-				$a_out['uid'] = $card->uid;			
+				$a_out['uid'] = $card->uid;
 			if ($card->firstname)
 				$a_out['givenName'] = $card->firstname;
 			if ($card->title)
@@ -684,7 +677,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			if ($card->jobtitle)
 				$a_out['employeeType'] = $card->jobtitle;
 			if ($card->email)
-				$a_out['mail'] = $card->email;			
+				$a_out['mail'] = $card->email;
 			// Get the binary for the photo of type jpeg
 			// FIXME: ? According to the specs, only JFIF formats should be used
 			// but some clients read even PNG from the jpegPhoto attr. Should we be
@@ -745,11 +738,12 @@ class vcard_convert extends Contact_Vcard_Parse
 			// compose ldif output
 			foreach ($a_out as $key => $val)
 			{
+				$enc = $key == 'dn' ? 'UTF-8' : $encoding;
 				if (is_array($val))
 					foreach ($val as $i => $val2)
-						$out .= sprintf("%s: %s\n", $key, $this->ldif_encode($val2));
+						$out .= sprintf("%s: %s\n", $key, $this->ldif_encode($val2, $enc));
 				else
-					$out .= sprintf("%s:%s\n", $key, $this->ldif_encode($val));
+					$out .= sprintf("%s:%s\n", $key, $this->ldif_encode($val, $enc));
 			}
 
 			$out .= "\n";
@@ -765,8 +759,8 @@ class vcard_convert extends Contact_Vcard_Parse
 	 * @author Thomas Bruederli
 	 * @author Gerd Mueller <gerd@zeltnerweg9.ch>
 	 */
-function toFritzBox()
-		{
+	function toFritzBox()
+	{
 		$delm=";";
 		$out = 'sep='.$delm."\r\n";
 		$this->export_count = 0;
@@ -895,15 +889,15 @@ function toFritzBox()
 	 *
 	 * @access private
 	 */
-	function ldif_encode($str)
+	function ldif_encode($str, $encoding)
 	{
 		// base64-encode all values that contain non-ascii chars
 		// $str is already UTF-encoded after the VCard is read in $card
 		if (preg_match('/[^\x09\x20-\x7E]/', $str))
-			$str = ': ' . base64_encode($str);
+			$str = ': ' . base64_encode($this->charset_convert($str, $encoding));
 		else
 			$str = ' ' . $str;
-			
+
 		// Make long lines splited according to LDIF specs to a new line starting with [:space:]
 		return preg_replace('/\n $/', '', chunk_split($str, 76, "\n "));
 	}
@@ -993,8 +987,25 @@ function toFritzBox()
 		// strip BOM if it is still there
 		return ltrim($str, "\xFE\xFF\xEF\xBB\xBF\0");
 	}
-	
-	
+
+
+	/**
+	 * Convert the given string from internal charset to the target encoding
+	 */
+	function charset_convert($str, $encoding)
+	{
+		// convert to ISO-8859-1
+		if ($encoding == 'ISO-8859-1' && $this->charset == 'UTF-8' && function_exists('utf8_decode'))
+			return utf8_decode($str);
+
+		// convert to any other charset
+		if (!empty($encoding) && $encoding !== $this->charset && function_exists('iconv'))
+			return iconv($this->charset, $encoding.'//IGNORE', $str);
+
+		return $str;
+	}
+
+
 	/**
 	 * Returns UNICODE type based on BOM (Byte Order Mark) or default value on no match
 	 *

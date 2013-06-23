@@ -81,7 +81,7 @@ if (!empty($_FILES['_vcards']))
 		{
 			// Clean the input dn modifier from dangerous chars
 			$dnID = substr(preg_replace('/[^\da-z=,_ -]/i', '', $_POST['_dn']), 0, 255);
-			print $conv->toLdif($dnID ? $dnID : "");
+			print $conv->toLdif($dnID ? $dnID : "", $_POST['_encoding']);
 			exit;
 		}
 		else if ($_POST['_format'] == 'gmail')
