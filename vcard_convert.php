@@ -424,7 +424,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= 'Home Phone'.$delm.'Business Phone'.$delm.'Home Fax'.$delm.'Business Fax'.$delm.'Pager'.$delm.'Mobile Phone'.$delm;
 			$out .= 'Home Street'.$delm.'Home Address 2'.$delm.'Home City'.$delm.'Home State'.$delm.'Home Postal Code'.$delm.'Home Country'.$delm;
 			$out .= 'Business Address'.$delm.'Business Address 2'.$delm.'Business City'.$delm.'Business State'.$delm.'Business Postal Code'.$delm;
-			$out .= 'Business Country'.$delm.'Country Code'.$delm.'Related name'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm.
+			$out .= 'Business Country'.$delm.'Country Code'.$delm.'Related name'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm;
 			$out .= 'Birthday'.$delm.'Anniversary'.$delm.'Gender'.$delm;
 			$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories'.$eolm;
 		}
