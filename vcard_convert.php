@@ -64,8 +64,8 @@ class vcard_convert extends Contact_Vcard_Parse
 	var $mailonly = false;
 	var $phoneonly = false;
 	var $accesscode = null;
-	
-	
+
+
 	/**
 	 * Constructor taking a list of converter properties
 	 */
@@ -89,7 +89,7 @@ class vcard_convert extends Contact_Vcard_Parse
 		// dump to, and get return from, the fromText() method.
 		return $this->fromText($text, $decode_qp);
 	}
-	
+
 	/**
 	 * Parse a given string for vCards
 	 *
@@ -115,18 +115,18 @@ class vcard_convert extends Contact_Vcard_Parse
 		if (!empty($this->parsed))
 		{
 			$this->normalize();
-			
+
 			// after normalize() all values should be UTF-8
 			if (!isset($this->charset))
 				$this->charset = 'UTF-8';
-				
+
 			return count($this->cards);
 		}
 		else
 			return false;
 	}
-	
-	
+
+
 	/**
 	 * Convert the abstract vCard structure into address objects
 	 *
@@ -139,7 +139,7 @@ class vcard_convert extends Contact_Vcard_Parse
 		{
 			$vcard = new vCard;
 			$vcard->version = (float)$card['VERSION'][0]['value'][0][0];
-			
+
 			// convert all values to UTF-8 according to their charset param
 			if (!isset($this->charset))
 				$card = $this->card2utf8($card);
@@ -150,7 +150,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$vcard->firstname = trim($names[1][0]);
 			$vcard->middlename = trim($names[2][0]);
 			$vcard->title = trim($names[3][0]);
-			
+
 			if (empty($vcard->title) && isset($card['TITLE']))
 				$vcard->title = trim($card['TITLE'][0]['value'][0][0]);
 
@@ -195,7 +195,7 @@ class vcard_convert extends Contact_Vcard_Parse
 				$vcard->organization = trim($temp[0][0]);
 				$vcard->department   = trim($temp[1][0]);
 			}
-			
+
 			// extract urls
 			if (is_array($card['URL']))
 				$this->parse_url($card['URL'], $vcard);
@@ -255,7 +255,7 @@ class vcard_convert extends Contact_Vcard_Parse
 				$vcard->email2 = $a_email[1];
 			if (!empty($a_email[2]))
 				$vcard->email3 = $a_email[2];
-			
+
 			// find IM entries
 			if (is_array($card['X-AIM']))
 				$vcard->im['aim'] = $card['X-AIM'][0]['value'][0][0];
@@ -333,7 +333,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			if (in_array_nc("WORK", $adr['param']['TYPE']))
 				$work = $adr['value'];
 		}
-		
+
 		// values not splitted by Contact_Vcard_Parse if key is like item1.ADR
 		if (strstr($home[0][0], ';'))
 		{
@@ -354,7 +354,7 @@ class vcard_convert extends Contact_Vcard_Parse
 				'zipcode' => $home[5][0],
 				'country' => $home[6][0]);
 		}
-		
+
 		// values not splitted by Contact_Vcard_Parse if key is like item1.ADR
 		if (strstr($work[0][0], ';'))
 		{
@@ -408,12 +408,12 @@ class vcard_convert extends Contact_Vcard_Parse
 			}
 		}
 	}
-	
+
 
 	/**
 	 * Convert the parsed vCard data into CSV format
 	 */
-	function toCSV($delm="\t", $add_title=true, $encoding=null)
+	function toCSV($delm="\t", $eolm="\n", $add_title=true, $encoding=null)
 		{
 		$out = '';
 		$this->export_count = 0;
@@ -426,7 +426,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= 'Business Address'.$delm.'Business Address 2'.$delm.'Business City'.$delm.'Business State'.$delm.'Business Postal Code'.$delm;
 			$out .= 'Business Country'.$delm.'Country Code'.$delm.'Related name'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm.
 			$out .= 'Birthday'.$delm.'Anniversary'.$delm.'Gender'.$delm;
-			$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories'."\n";
+			$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories'.$eolm;
 		}
 
 		foreach ($this->cards as $card)
@@ -474,13 +474,13 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($card->home['url'], $delm);
 			$out .= $this->csv_encode($card->categories, $delm, false);
 
-			$out .= "\n";
+			$out .= $eolm;
 			$this->export_count++;
 		}
 
 		return $this->charset_convert($out, $encoding);
 	}
-	
+
 	/**
 	 * New GMail export function
 	 *
@@ -516,7 +516,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			if ($card->work['state']) $work[] = $card->work['state'];
 			if ($card->work['zipcode']) $work[] = $card->work['zipcode'];
 			if ($card->work['country']) $work[] = $card->work['country'];
-			
+
 			$im = array_values($card->im);
 
 			$out .= $this->csv_encode($card->displayname, $delm);
@@ -657,17 +657,17 @@ class vcard_convert extends Contact_Vcard_Parse
 			}
 
 			$a_out = array();
-			
+
 			if ($identifier == "")
 				$a_out['dn'] = sprintf("cn=%s,mail=%s", $card->displayname, $card->email);
 			else
 				$a_out['dn'] = sprintf("uid=%s, %s", $card->uid, $identifier);
-				
+
 			$a_out['objectclass'] = array('top', 'person', 'organizationalPerson', 'inetOrgPerson', 'mozillaAbPerson');
 
 			$a_out['cn'] = $card->displayname;
 			$a_out['sn'] = $card->surname;
-			
+
 			if ($card->uid)
 				$a_out['uid'] = $card->uid;
 			if ($card->firstname)
@@ -764,7 +764,7 @@ class vcard_convert extends Contact_Vcard_Parse
 		$delm=";";
 		$out = 'sep='.$delm."\r\n";
 		$this->export_count = 0;
-		
+
 		$out .= 'Name'.$delm.
 				'TelNumHome'.$delm.'VanityHome'.$delm.'KurzWahlHome'.$delm.
 				'TelNumWork'.$delm.'VanityWork'.$delm.'KurzWahlWork'.$delm.
@@ -779,12 +779,12 @@ class vcard_convert extends Contact_Vcard_Parse
 				continue;
 			if ($this->phoneonly && empty($card->home['phone']) && empty($card->work['phone']) && empty($card->mobile))
 				continue;
-			
+
 			$name=array();
 			$firstname    = $this->csv_encode($card->firstname, $delm, false);
 			$surname      = $this->csv_encode($card->surname, $delm, false);
 			$organization = $this->csv_encode($card->organization, $delm, false);
-			
+
 			if (strlen($surname))   $name[] = $surname;
 			if (strlen($firstname)) $name[] = $firstname;
 			if (count($name))
@@ -794,19 +794,19 @@ class vcard_convert extends Contact_Vcard_Parse
 			{
 				$out .= $organization.$delm;
 			}
-			
+
 			$out .= $this->csv_encode($this->normalize_phone($card->home['phone']), $delm);
-			$out .= $delm; # Vanity			
-			$out .= $delm; # Kurzwahl			
+			$out .= $delm; # Vanity
+			$out .= $delm; # Kurzwahl
 			$out .= $this->csv_encode($this->normalize_phone($card->work['phone']), $delm);
-			$out .= $delm; # Vanity			
-			$out .= $delm; # Kurzwahl			
+			$out .= $delm; # Vanity
+			$out .= $delm; # Kurzwahl
 			$out .= $this->csv_encode($this->normalize_phone($card->mobile), $delm);
-			$out .= $delm; # Vanity			
-			$out .= $delm; # Kurzwahl			
+			$out .= $delm; # Vanity
+			$out .= $delm; # Kurzwahl
 			$out .= $this->csv_encode($card->notes, $delm);
 			$out .= $organization.$delm;
-			$out .= $delm; # Bild			
+			$out .= $delm; # Bild
 			$out .= $delm; # Kategorie
 			$out .= $delm; # ImageUrl
 			$out .= '1'.$delm; #Prio
@@ -824,14 +824,14 @@ class vcard_convert extends Contact_Vcard_Parse
 
 		return $out;
 	}
-	
+
 	/**
 	 * Export all cards images
 	 */
 	function toImages($tmpdir)
 	{
 		$this->export_count = 0;
-		
+
 		foreach($this->cards as $card)
 		{
 			if ($card->photo)
@@ -841,10 +841,10 @@ class vcard_convert extends Contact_Vcard_Parse
 				{
 					if ($ext == "jpeg")
 						$ext = "jpg";
-					
+
 					// Try to guess the displayname of the card if it is empty
 					$card->displayname = trim($card->displayname);
-				
+
 					if (empty($card->displayname))
 						$card->displayname = trim($card->firstname.' '.$card->surname);
 					if (empty($card->displayname))
@@ -882,8 +882,8 @@ class vcard_convert extends Contact_Vcard_Parse
 			$str = '"'.$str.'"';
 		return preg_replace('/\r?\n/', ' ', $str) . ($add_delm ? $delm : '');
 	}
-	
-	
+
+
 	/**
 	 * Encode one col string for Ldif export
 	 *
@@ -914,8 +914,8 @@ class vcard_convert extends Contact_Vcard_Parse
 			$phone = preg_replace('/^[\+|00]+' . $this->accesscode . '[- ]*(\d+)/', '0\1', $phone);
 		return $phone;
 	}
-	
-	
+
+
 	/**
 	 * Convert a whole vcard (array) to UTF-8.
 	 * Each member value that has a charset parameter will be converted.
@@ -935,7 +935,7 @@ class vcard_convert extends Contact_Vcard_Parse
 				}
 			}
 		}
-		
+
 		return $card;
 	}
 
@@ -949,10 +949,10 @@ class vcard_convert extends Contact_Vcard_Parse
 	{
 		// Sometimes the charset in $from is in quotes, so clean it up
 		$from = trim($from,'"');
-		
+
 		if (!$from)
 			$from = $this->charset;
-		
+
 		// recursively convert all array values
 		if (is_array($in))
 		{
@@ -1054,7 +1054,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			| \xF4[\x80-\x8F][\x80-\xBF]{2}
 			)*\z/xs', substr($string, 0, 2048));
 	}
-	
+
 }  // end class vcard_convert
 
 

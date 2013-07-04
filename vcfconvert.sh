@@ -54,6 +54,7 @@ Usage: convert [-himpv] [-d delimiter] [-n identifier] [-o output_file] -f forma
   -n LDAP identifier added to dn:
   -o Output file (write to stdout by default)
   -d CSV col delimiter
+  -e EOL marker (unix,dos,mac, default unix)
   -h Include header line in CSV output
   -i Convert CSV output to ISO-8859-1 encoding
   -m Only convert cards with an e-mail address
@@ -105,7 +106,16 @@ if ($conv->fromFile($file))
 		else if ($format == 'csv')
 		{
 			$delimiter = $opt['d'] ? ($opt['d']=='\t' || $opt['d']=='tab' ? "\t" : $opt['d']) : ";";
-			$out = $conv->toCSV($delimiter, isset($opt['h']), isset($opt['i']) ? 'ISO-8859-1' : null);
+			$eol_marker = array(
+				'unix' => "\n",
+				'dos' => "\r\n",
+				'mac' => "\r",
+			);
+			if ($opt['e'] && array_key_exists($opt['e'], $eol_marker)) 
+				$eol_marker = $eol_marker[$opt['d']];
+			else
+				$eol_marker = "\n";
+			$out = $conv->toCSV($delimiter, "\n", isset($opt['h']), isset($opt['i']) ? 'ISO-8859-1' : null);
 			
 			if (isset($opt['v']) && isset($opt['i']))
 				echo "Converting output to ISO-8859-1\n";

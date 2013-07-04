@@ -60,6 +60,7 @@ function set_form_fields(elem)
   var format = elem.options[elem.selectedIndex].value;
   var header = elem.form._header;
   var delimiter = elem.form._delimiter;
+  var eol_marker = elem.form._eol_marker;
   var encoding = elem.form._encoding;
   var dn = elem.form._dn;
 
@@ -72,6 +73,7 @@ function set_form_fields(elem)
     case 'img':
       header.disabled = true;
       delimiter.disabled = true;
+      eol_marker.disabled = true;
       encoding.disabled = true;
       dn.disabled = true;
       break;
@@ -79,6 +81,7 @@ function set_form_fields(elem)
     case 'ldap':
       header.disabled = true;
       delimiter.disabled = true;
+      eol_marker.disabled = true;
       encoding.disabled = false;
       dn.disabled = false;
       break;
@@ -86,6 +89,7 @@ function set_form_fields(elem)
     case 'csv':
       header.disabled = false;
       delimiter.disabled = false;
+      eol_marker.disabled = false;
       encoding.disabled = false;
       dn.disabled = true;
       break;
@@ -93,9 +97,11 @@ function set_form_fields(elem)
     case 'fritzbox':
       encoding.selectedIndex = 1;
       delimiter.selectedIndex = 1;
+      eol_marker.selectedIndex = 0;
       header.checked = true;
       header.disabled = true;
       delimiter.disabled = true;
+      eol_marker.disabled = true;
       encoding.disabled = true;
       dn.disabled = true;
       break;
@@ -149,6 +155,11 @@ if (!empty($GLOBALS['error_msg']))
   <option value="tab">Tab</option>
   <option value=";">Semicolon</option>
   <option value=",">Comma</option>
+</select>
+<select name="_eol_marker" disabled>
+  <option value="unix">Unix (CRLF)</option>
+  <option value="dos">DOS/Windows (LF)</option>
+  <option value="mac">Old Mac (pre-OSX, CR)</option>
 </select>
 <input type="checkbox" name="_header" id="checkHeader" value="1" disabled><label for="checkHeader">&nbsp;Add header line</label></td>
 

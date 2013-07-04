@@ -55,7 +55,7 @@ if (!empty($_FILES['_vcards']))
 		'phoneonly' => !empty($_POST['_phoneonly']),
 		'accesscode' => preg_replace('/[^1-9]/', '', $_POST['_accesscode']),
 	));
-	
+
 	// check for errors
 	if ($err = $_FILES['_vcards']['error'])
 	{
@@ -88,17 +88,23 @@ if (!empty($_FILES['_vcards']))
 		{
 			print $conv->toGmail();
 			exit;
-		}	
+		}
 		else if ($_POST['_format'] == 'fritzbox')
 		{
 			print $conv->toFritzBox();
 			exit;
-		}	
+		}
 		else if ($_POST['_format'] == 'csv')
 		{
 			$header = $_POST['_header'] === '1' ? true : false;
 			$delimiter = $_POST['_delimiter'] == 'tab' ? "\t" : $_POST['_delimiter'];
-			print $conv->toCSV($delimiter, $header, $_POST['_encoding']);
+			$eol_marker = array(
+				'unix' => "\n",
+				'dos' => "\r\n",
+				'mac' => "\r",
+			);
+			$eol_marker = $eol_marker[$_POST['_eol_marker']];
+			print $conv->toCSV($delimiter, $eol_marker, $header, $_POST['_encoding']);
 			exit;
 		}
 		// extract all images from the vcard file
@@ -124,7 +130,7 @@ if (!empty($_FILES['_vcards']))
 			}
 
 			shell_exec('rm -rf '.escapeshellarg($tmpdir));
-			
+
 			if ($success)
 				exit;
 		}
