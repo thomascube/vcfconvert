@@ -413,20 +413,33 @@ class vcard_convert extends Contact_Vcard_Parse
 	/**
 	 * Convert the parsed vCard data into CSV format
 	 */
-	function toCSV($delm="\t", $eolm="\n", $add_title=true, $encoding=null)
+	function toCSV($delm="\t", $eolm="\n", $add_title=true, $encoding=null, $title_type='en')
 		{
 		$out = '';
 		$this->export_count = 0;
 
 		if ($add_title)
 		{
-			$out .= 'First Name'.$delm.'Last Name'.$delm.'Display Name'.$delm.'Nickname'.$delm.'E-mail Address'.$delm.'E-mail 2 Address'.$delm.'E-mail 3 Address'.$delm;
-			$out .= 'Home Phone'.$delm.'Business Phone'.$delm.'Home Fax'.$delm.'Business Fax'.$delm.'Pager'.$delm.'Mobile Phone'.$delm;
-			$out .= 'Home Street'.$delm.'Home Address 2'.$delm.'Home City'.$delm.'Home State'.$delm.'Home Postal Code'.$delm.'Home Country'.$delm;
-			$out .= 'Business Address'.$delm.'Business Address 2'.$delm.'Business City'.$delm.'Business State'.$delm.'Business Postal Code'.$delm;
-			$out .= 'Business Country'.$delm.'Country Code'.$delm.'Related name'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm;
-			$out .= 'Birthday'.$delm.'Anniversary'.$delm.'Gender'.$delm;
-			$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories'.$eolm;
+			if ('de_outlook' == $title_type)
+			{
+				$out .= 'Vorname'.$delm.'Nachname'.$delm.'Name'.$delm.'Spitzname'.$delm.'E-Mail'.$delm.'E-Mail 2'.$delm.'E-Mail 3'.$delm;
+				$out .= 'Telefon privat'.$delm.'Telefon geschäftlich'.$delm.'Fax privat'.$delm.'Fax geschäftlich'.$delm.'Pager'.$delm.'Mobiltelefon'.$delm;
+				$out .= 'Straße privat'.$delm.'Straße privat 2'.$delm.'Ort privat'.$delm.'Bundesland/Kanton privat'.$delm.'Postleitzahl privat'.$delm.'Land/Region privat'.$delm;
+				$out .= 'Straße geschäftlich'.$delm.'Straße geschäftlich 2'.$delm.'Ort geschäftlich'.$delm.'Region geschäftlich'.$delm.'Postleitzahl geschäftlich'.$delm;
+				$out .= 'Land/Region geschäftlich'.$delm.'Landescode'.$delm.'Partner'.$delm.'Position'.$delm.'Abteilung'.$delm.'Firma'.$delm.'Notizen'.$delm;
+				$out .= 'Geburtstag'.$delm.'Jahrestag'.$delm.'Geschlecht'.$delm;
+				$out .= 'Webseite'.$delm.'Webseite 2'.$delm.'Kategorien'.$eolm;
+			}
+			else
+			{
+				$out .= 'First Name'.$delm.'Last Name'.$delm.'Display Name'.$delm.'Nickname'.$delm.'E-mail Address'.$delm.'E-mail 2 Address'.$delm.'E-mail 3 Address'.$delm;
+				$out .= 'Home Phone'.$delm.'Business Phone'.$delm.'Home Fax'.$delm.'Business Fax'.$delm.'Pager'.$delm.'Mobile Phone'.$delm;
+				$out .= 'Home Street'.$delm.'Home Address 2'.$delm.'Home City'.$delm.'Home State'.$delm.'Home Postal Code'.$delm.'Home Country'.$delm;
+				$out .= 'Business Address'.$delm.'Business Address 2'.$delm.'Business City'.$delm.'Business State'.$delm.'Business Postal Code'.$delm;
+				$out .= 'Business Country'.$delm.'Country Code'.$delm.'Related name'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm;
+				$out .= 'Birthday'.$delm.'Anniversary'.$delm.'Gender'.$delm;
+				$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories'.$eolm;
+			}
 		}
 
 		foreach ($this->cards as $card)

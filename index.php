@@ -66,7 +66,7 @@ if (!empty($_FILES['_vcards']))
 	// parse the vCard file
 	else if ($conv->fromFile($_FILES['_vcards']['tmp_name']))
 	{
-		$ext = $_POST['_format'] == 'gmail' ? 'csv' : ($_POST['_format'] == 'img' ? 'zip' : $_POST['_format']);
+		$ext = ($_POST['_format'] == 'gmail' || $_POST['_format'] == 'outlook_de') ? 'csv' : ($_POST['_format'] == 'img' ? 'zip' : $_POST['_format']);
 		$fname = asciiwords(preg_replace('/\.[a-z]+$/i', '', $_FILES['_vcards']['name']));
 
 		header(sprintf('Content-Type: text/%s', $ext));
@@ -92,6 +92,11 @@ if (!empty($_FILES['_vcards']))
 		else if ($_POST['_format'] == 'fritzbox')
 		{
 			print $conv->toFritzBox();
+			exit;
+		}
+		else if ($_POST['_format'] == 'outlook_de')
+		{
+			print $conv->toCSV(',', "\r\n", true, 'ISO-8859-15', 'de_outlook');
 			exit;
 		}
 		else if ($_POST['_format'] == 'csv')

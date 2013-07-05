@@ -105,6 +105,18 @@ function set_form_fields(elem)
       encoding.disabled = true;
       dn.disabled = true;
       break;
+      
+    case 'outlook_de':
+        encoding.selectedIndex = 2;
+        delimiter.selectedIndex = 2;
+        eol_marker.selectedIndex = 1;
+        header.checked = true;
+        header.disabled = true;
+        delimiter.disabled = true;
+        eol_marker.disabled = true;
+        encoding.disabled = true;
+        dn.disabled = true;
+        break;
   }
 
   var rootdnrow = document.getElementById('ldaprootdn');
@@ -149,6 +161,7 @@ if (!empty($GLOBALS['error_msg']))
   <option value="csv">CSV</option>
   <option value="gmail">Gmail (CSV)</option>
   <option value="fritzbox">FritzBox (CSV)</option>
+  <option value="outlook_de">Outlook (German CSV)</option>
   <option value="img">Images</option>
 </select>
 <select name="_delimiter" disabled>

@@ -50,7 +50,7 @@ function get_args()
 $opt = get_args();
 $usage = <<<EOF
 Usage: convert [-himpv] [-d delimiter] [-n identifier] [-o output_file] -f format file
-  -f Target format (ldif,ldap,csv,gmail,libdlusb)
+  -f Target format (ldif,ldap,csv,gmail,outlook_de,libdlusb)
   -n LDAP identifier added to dn:
   -o Output file (write to stdout by default)
   -d CSV col delimiter
@@ -102,6 +102,9 @@ if ($conv->fromFile($file))
 
 		else if ($format == 'fritzbox')
 			$out = $conv->toFritzBox();
+
+		else if ($format == 'outlook_de')
+			$out = $conv->toCSV(',', "\r\n", true, 'ISO-8859-15', 'de_outlook'); 
 			
 		else if ($format == 'csv')
 		{
