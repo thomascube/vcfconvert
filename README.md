@@ -1,6 +1,7 @@
 vCard to LDIF/CSV Converter
 ===========================
 by Thomas Bruederli
+improved by Arafat Rahman
 
 To run this converter just copy all files to a webserver directory where PHP
 is installed and enabled. Open your browser and type in the URL of your
@@ -19,6 +20,9 @@ following commands:
 or
 
 	$ ./vcfconvert.sh -hv -f csv -d ";" -o destination_file.csv source_file.vcf
+
+or
+    $ ./vcfconvert.sh -hv -f csv -d ";" -o destination_file.csv source_dir
 
 To get information about optinal parameters, type
 
