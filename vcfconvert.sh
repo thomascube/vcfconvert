@@ -1,4 +1,4 @@
-#!/usr/bin/php -qC 
+#!/usr/bin/php -qC
 <?php
 
 /*
@@ -13,11 +13,12 @@
  |                                                                       |
  +-----------------------------------------------------------------------+
  | Author: Thomas Bruederli <thomas@brotherli.ch>                        |
+ | Author: Arafat Rahman <opurahman@gmail.com>                           |
  +-----------------------------------------------------------------------+
 
 */
 
-@ini_set('error_reporting', E_ALL&~E_NOTICE); 
+@ini_set('error_reporting', E_ALL&~E_NOTICE);
 
 require_once('vcard_convert.php');
 
@@ -73,63 +74,87 @@ $format = $opt['f'] ? $opt['f'] : 'ldif';
 if (empty($file))
 	die("Not enough arguments!\n$usage");
 
+if(is_file('./'.$file))
+{
+	$file = array($file);
+}
+
+if(is_dir($file))
+{
+	if ($handle = opendir($file)) {
+		$path = $file;
+
+		$file = array();
+	    echo "Entries:\n";
+	    while (false !== ($entry = readdir($handle))) {
+	        $file[] = $path.'/'.$entry;
+	    }
+
+	    closedir($handle);
+	}
+}
+
 // instantiate a parser object
 $conv = new vcard_convert(array('mailonly' => isset($opt['m']), 'phoneonly' => isset($opt['p'])));
 
-// parse a vCard file
-if ($conv->fromFile($file))
+$out = '';
+
+foreach($file as $f)
 {
-	if (isset($opt['v']))
-		echo "Detected $conv->file_charset encoding\n";
-	if (isset($opt['v']) && isset($opt['m']))
-		echo "Only convert vCards with an e-mail address\n";
-		
-		if ($format == 'ldif')
-			$out = $conv->toLdif();
+	// parse a vCard file
+	if ($conv->fromFile($f))
+	{
+		if (isset($opt['v']))
+			echo "Detected $conv->file_charset encoding\n";
+		if (isset($opt['v']) && isset($opt['m']))
+			echo "Only convert vCards with an e-mail address\n";
 
-		else if ($format == 'ldap')
-		{
-			$identifier = $opt['n'];
-			$out = $conv->toLdif($identifier);
-		}
+			if ($format == 'ldif')
+				$out .= $conv->toLdif();
 
-		else if ($format == 'gmail')
-			$out = $conv->toGmail();
-
-		else if ($format == 'libdlusb')
-			$out = $conv->toLibdlusb();
-
-		else if ($format == 'fritzbox')
-			$out = $conv->toFritzBox();
-			
-		else if ($format == 'csv')
-		{
-			$delimiter = $opt['d'] ? ($opt['d']=='\t' || $opt['d']=='tab' ? "\t" : $opt['d']) : ";";
-			$out = $conv->toCSV($delimiter, isset($opt['h']), isset($opt['i']) ? 'ISO-8859-1' : null);
-			
-			if (isset($opt['v']) && isset($opt['i']))
-				echo "Converting output to ISO-8859-1\n";
-		}
-		else
-			die("Unknown output format\n");
-		
-		// write to output file
-		if ($opt['o'])
-		{
-			if ($fp = @fopen($opt['o'], 'w'))
+			else if ($format == 'ldap')
 			{
-				fwrite($fp, $out);
-				fclose($fp);
-				echo "Wrote ".$conv->export_count." cards to $opt[o]\n";
+				$identifier = $opt['n'];
+				$out .= $conv->toLdif($identifier);
+			}
+
+			else if ($format == 'gmail')
+				$out .= $conv->toGmail();
+
+			else if ($format == 'libdlusb')
+				$out .= $conv->toLibdlusb();
+
+			else if ($format == 'fritzbox')
+				$out .= $conv->toFritzBox();
+
+			else if ($format == 'csv')
+			{
+				$delimiter = $opt['d'] ? ($opt['d']=='\t' || $opt['d']=='tab' ? "\t" : $opt['d']) : ";";
+				$out .= $conv->toCSV($delimiter, isset($opt['h']), isset($opt['i']) ? 'ISO-8859-1' : null);
+
+				if (isset($opt['v']) && isset($opt['i']))
+					echo "Converting output to ISO-8859-1\n";
 			}
 			else
-				die("Cannot write to $opt[o]; permission denied\n");
-		}
-		else
-			echo $out;
+				die("Unknown output format\n");
+	}
+	else
+		echo "Cannot parse $file\n";
+}
+
+// write to output file
+if ($opt['o'])
+{
+	if ($fp = @fopen($opt['o'], 'w'))
+	{
+		fwrite($fp, $out);
+		fclose($fp);
+		echo "Wrote ".$conv->export_count." cards to $opt[o]\n";
+	}
+	else
+		die("Cannot write to $opt[o]; permission denied\n");
 }
 else
-	echo "Cannot parse $file\n";
-
+	echo $out;
 
 ?>
