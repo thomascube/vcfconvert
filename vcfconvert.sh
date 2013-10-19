@@ -49,7 +49,7 @@ function get_args()
 // read commandline arguments
 $opt = get_args();
 $usage = <<<EOF
-Usage: convert [-himpvl] [-d delimiter] [-n identifier] [-o output_file] -f format file
+Usage: convert [-hilmpv] [-d delimiter] [-b identifier] [-o output_file] -f format file
   -f Target format (ldif,ldap,csv,gmail,libdlusb)
   -b LDAP identifier added to dn:
   -l Generate just a list of DN objects (only works with -n)
