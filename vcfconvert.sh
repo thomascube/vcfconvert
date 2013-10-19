@@ -51,7 +51,7 @@ $opt = get_args();
 $usage = <<<EOF
 Usage: convert [-himpvl] [-d delimiter] [-n identifier] [-o output_file] -f format file
   -f Target format (ldif,ldap,csv,gmail,libdlusb)
-  -n LDAP identifier added to dn:
+  -b LDAP identifier added to dn:
   -l Generate just a list of DN objects (only works with -n)
   -o Output file (write to stdout by default)
   -d CSV col delimiter
@@ -89,10 +89,7 @@ if ($conv->fromFile($file))
 			$out = $conv->toLdif();
 
 		else if ($format == 'ldap')
-		{
-			$identifier = $opt['n'];
-			$out = $conv->toLdif($identifier, isset($opt['l']) ? 'dn' : null);
-		}
+			$out = $conv->toLdif($opt['b'], isset($opt['l']) ? 'dn' : null);
 
 		else if ($format == 'gmail')
 			$out = $conv->toGmail();
