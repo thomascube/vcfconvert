@@ -4,9 +4,9 @@
 /*
  +-----------------------------------------------------------------------+
  | Commandline vCard converter                                           |
- | Version 0.8.7                                                         |
+ | Version 0.8.8                                                         |
  |                                                                       |
- | Copyright (C) 2006-2012, Thomas Bruederli - Switzerland               |
+ | Copyright (C) 2006-2013, Thomas Bruederli - Switzerland               |
  | Licensed under the GNU GPL                                            |
  |                                                                       |
  | Type './convert help' for usage information                           |
