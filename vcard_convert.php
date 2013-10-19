@@ -391,8 +391,9 @@ class vcard_convert extends Contact_Vcard_Parse
 				$vcard->pager = $tel['value'][0][0];
 			else if (in_array_nc("CELL", $tel['param']['TYPE']))
 				$vcard->mobile = $tel['value'][0][0];
-			else if (in_array_nc("HOME", $tel['param']['TYPE']) ||
-				(in_array_nc("PREF", $tel['param']['TYPE']) && !in_array_nc("WORK", $tel['param']['TYPE']) && empty($vcard->home['phone'])))
+			else if (in_array_nc("FAX", $tel['param']['TYPE']))
+				$vcard->fax = $tel['value'][0][0];
+			else if (in_array_nc("HOME", $tel['param']['TYPE']) || in_array_nc("PREF", $tel['param']['TYPE']))
 			{
 				if (in_array_nc("FAX", $tel['param']['TYPE']))
 					$vcard->home['fax'] = $tel['value'][0][0];
@@ -619,7 +620,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	/**
 	 * Export cards as Ldif/LDAP Ldif
 	 */
-	function toLdif($identifier="", $encoding="UTF-8")
+	function toLdif($identifier="", $attrib=null, $encoding="UTF-8")
 	{
 		$out = '';
 		$this->export_count = 0;
@@ -628,7 +629,7 @@ class vcard_convert extends Contact_Vcard_Parse
 		{
 			if ($this->mailonly && empty($card->email) && empty($card->email2))
 				continue;
-			if ($this->phoneonly && empty($card->home['phone']) && empty($card->work['phone']) && empty($card->mobile))
+			if ($this->phoneonly && empty($card->home['phone']) && empty($card->work['phone']) && empty($card->mobile) && empty($card->fax))
 				continue;
 
 			// If we will export LDIF for an LDAP server, some checks and tweaks are needed
@@ -663,7 +664,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			else
 				$a_out['dn'] = sprintf("uid=%s, %s", $card->uid, $identifier);
 				
-			$a_out['objectclass'] = array('top', 'person', 'organizationalPerson', 'inetOrgPerson', 'mozillaAbPerson');
+			$a_out['objectclass'] = array('top', 'person', 'organizationalPerson', 'inetOrgPerson', 'mozillaAbPersonAlpha');
 
 			$a_out['cn'] = $card->displayname;
 			$a_out['sn'] = $card->surname;
@@ -692,6 +693,8 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['homePhone'] = $this->normalize_phone($card->home['phone']);
 			if ($card->mobile)
 				$a_out['mobile'] = $this->normalize_phone($card->mobile);
+			if ($card->fax)
+				$a_out['fax'] = $this->normalize_phone($card->fax);
 			if ($card->pager)
 				$a_out['pager'] = $this->normalize_phone($card->pager);
 			if ($card->home['addr1'])
@@ -735,15 +738,26 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['mozillaCustom1'] = sprintf("%04d-%02d-%02d", $card->birthday['y'], $card->birthday['m'], $card->birthday['d']);
 			}
 
-			// compose ldif output
-			foreach ($a_out as $key => $val)
+			// only return a single attribute (e.g. dn)
+			if (!empty($attrib))
 			{
-				$enc = $key == 'dn' ? 'UTF-8' : $encoding;
-				if (is_array($val))
-					foreach ($val as $i => $val2)
-						$out .= sprintf("%s: %s\n", $key, $this->ldif_encode($val2, $enc));
-				else
-					$out .= sprintf("%s:%s\n", $key, $this->ldif_encode($val, $enc));
+				if (!isset($a_out[$attrib]))
+					continue;
+				$val = is_array($a_out[$attrib]) ? $a_out[$attrib][0] : $a_out[$attrib];
+				$out .= trim($this->ldif_encode($val, $enc));
+			}
+			else
+			{
+				// compose ldif output
+				foreach ($a_out as $key => $val)
+				{
+					$enc = $key == 'dn' ? 'UTF-8' : $encoding;
+					if (is_array($val))
+						foreach ($val as $i => $val2)
+							$out .= sprintf("%s: %s\n", $key, $this->ldif_encode($val2, $enc));
+					else
+						$out .= sprintf("%s:%s\n", $key, $this->ldif_encode($val, $enc));
+				}
 			}
 
 			$out .= "\n";

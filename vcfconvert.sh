@@ -30,11 +30,11 @@ function get_args()
 	for ($i=1; $i<count($_SERVER['argv']); $i++)
 	{
 		$arg = $_SERVER['argv'][$i];
-		if ($arg{0} == '-' && $arg{1} != '-')
+		if ($arg[0] == '-' && $arg[1] != '-')
 		{
 			for ($j=1; $j < strlen($arg); $j++)
 			{
-				$key = $arg{$j};
+				$key = $arg[$j];
 				$value = $_SERVER['argv'][$i+1]{0} != '-' ? preg_replace(array('/^["\']/', '/["\']$/'), '', $_SERVER['argv'][++$i]) : true;
 				$args[$key] = $value;
 			}
@@ -49,9 +49,10 @@ function get_args()
 // read commandline arguments
 $opt = get_args();
 $usage = <<<EOF
-Usage: convert [-himpv] [-d delimiter] [-n identifier] [-o output_file] -f format file
+Usage: convert [-himpvl] [-d delimiter] [-n identifier] [-o output_file] -f format file
   -f Target format (ldif,ldap,csv,gmail,libdlusb)
   -n LDAP identifier added to dn:
+  -l Generate just a list of DN objects (only works with -n)
   -o Output file (write to stdout by default)
   -d CSV col delimiter
   -h Include header line in CSV output
@@ -90,7 +91,7 @@ if ($conv->fromFile($file))
 		else if ($format == 'ldap')
 		{
 			$identifier = $opt['n'];
-			$out = $conv->toLdif($identifier);
+			$out = $conv->toLdif($identifier, isset($opt['l']) ? 'dn' : null);
 		}
 
 		else if ($format == 'gmail')
