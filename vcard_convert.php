@@ -719,7 +719,7 @@ class vcard_convert extends Contact_Vcard_Parse
 				$a_out['st'] = $card->work['state'];
 			if ($card->work['zipcode'])
 				$a_out['postalCode'] = $card->work['zipcode'];
-			if ($card->work['country'])
+			if ($card->work['country'] && strlen($card->work['country']) == 2)
 				$a_out['c'] = $card->work['country'];
 			if ($card->work['phone'])
 				$a_out['telephoneNumber'] = $this->normalize_phone($card->work['phone']);
