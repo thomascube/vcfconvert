@@ -52,7 +52,7 @@ $usage = <<<EOF
 Usage: convert [-hilmpv] [-d delimiter] [-b identifier] [-o output_file] -f format file
   -f Target format (ldif,ldap,csv,gmail,libdlusb)
   -b LDAP identifier added to dn:
-  -l Generate just a list of DN objects (only works with -n)
+  -l Generate just a list of DN objects (only works with -b)
   -o Output file (write to stdout by default)
   -d CSV col delimiter
   -h Include header line in CSV output

@@ -662,7 +662,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			if ($identifier == "")
 				$a_out['dn'] = sprintf("cn=%s,mail=%s", $card->displayname, $card->email);
 			else
-				$a_out['dn'] = sprintf("uid=%s, %s", $card->uid, $identifier);
+				$a_out['dn'] = sprintf("uid=%s,%s", $card->uid, $identifier);
 				
 			$a_out['objectclass'] = array('top', 'person', 'organizationalPerson', 'inetOrgPerson', 'mozillaAbPersonAlpha');
 
@@ -744,7 +744,7 @@ class vcard_convert extends Contact_Vcard_Parse
 				if (!isset($a_out[$attrib]))
 					continue;
 				$val = is_array($a_out[$attrib]) ? $a_out[$attrib][0] : $a_out[$attrib];
-				$out .= trim($this->ldif_encode($val, $enc));
+				$out .= trim($this->ldif_encode($val, $enc, true));
 			}
 			else
 			{
@@ -903,7 +903,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	 *
 	 * @access private
 	 */
-	function ldif_encode($str, $encoding)
+	function ldif_encode($str, $encoding, $nowrap = false)
 	{
 		// base64-encode all values that contain non-ascii chars
 		// $str is already UTF-encoded after the VCard is read in $card
@@ -913,7 +913,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$str = ' ' . $str;
 
 		// Make long lines splited according to LDIF specs to a new line starting with [:space:]
-		return preg_replace('/\n $/', '', chunk_split($str, 76, "\n "));
+		return $nowrap ? $str : preg_replace('/\n $/', '', chunk_split($str, 76, "\n "));
 	}
 
 
