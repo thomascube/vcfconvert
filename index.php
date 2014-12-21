@@ -3,7 +3,7 @@
 /*
  +-----------------------------------------------------------------------+
  | vCard to LDIF/CSV Converter                                           |
- | Version 0.8.8                                                         |
+ | Version 0.8.9                                                         |
  |                                                                       |
  | Copyright (C) 2006-2013, Thomas Bruederli - Switzerland               |
  | Licensed under the GNU GPL                                            |
