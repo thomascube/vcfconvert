@@ -972,7 +972,7 @@ class vcard_convert extends Contact_Vcard_Parse
 		{
 			foreach ($node as $i => $subnode)
 			{
-				if ($subnode['param']['CHARSET'] && ($charset = $subnode['param']['CHARSET'][0]))
+				if ($subnode['param']['CHARSET'] && ($charset = strtoupper($subnode['param']['CHARSET'][0])))
 				{
 					$card[$key][$i]['value'] = $this->utf8_convert($subnode['value'], $charset);
 					unset($card[$key][$i]['param']['CHARSET']);
