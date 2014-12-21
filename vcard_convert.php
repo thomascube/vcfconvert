@@ -224,8 +224,11 @@ class vcard_convert extends Contact_Vcard_Parse
 				if (is_array($card["$prefix.X-ABADR"])) {
 					$this->parse_cc($card["$prefix.X-ABADR"], $vcard);
 				}
+				if (is_array($card["$prefix.X-ABDATE"])) {
+					$this->parse_abdate($card["$prefix.X-ABDATE"], $vcard, $card["$prefix.X-ABLABEL"][0]);
+				}
 				if (is_array($card["$prefix.X-ABRELATEDNAMES"])) {
-					$this->parse_rn($card["$prefix.X-ABRELATEDNAMES"], $vcard);
+					$this->parse_rn($card["$prefix.X-ABRELATEDNAMES"], $vcard /*, $card["$prefix.X-ABLABEL"][0]*/);
 				}
 			}
 
@@ -296,12 +299,16 @@ class vcard_convert extends Contact_Vcard_Parse
 	 *
 	 * @access private
 	 */
-	function parse_rn(&$node, &$vcard)
+	function parse_rn(&$node, &$vcard, $ablabel = null)
 	{
+		$key = $ablabel ? strtolower(trim($ablabel['value'][0][0], '_$!<>')) : null;
+		if (empty($key))
+			$key = 'relatedname';
+
 		foreach($node as $rn)
 		{
-			if (empty($vcard->relatedname) || in_array_nc("PREF", $rn['param']['TYPE']))
-				$vcard->relatedname = $rn['value'][0][0];
+			if (empty($vcard->{$key}) || in_array_nc("PREF", $rn['param']['TYPE']))
+				$vcard->{$key} = $rn['value'][0][0];
 		}
 	}
 
@@ -409,7 +416,30 @@ class vcard_convert extends Contact_Vcard_Parse
 			}
 		}
 	}
-	
+
+	/**
+	 * Helper method to parse X-ABDATE nodes
+	 *
+	 * @access private
+	 */
+	function parse_abdate(&$node, &$vcard, $ablabel = null)
+	{
+		$key = $ablabel ? strtolower(trim($ablabel['value'][0][0], '_$!<>')) : null;
+		if (empty($key))
+			$key = '_x_abdate';
+
+		foreach($node as $abdate)
+		{
+			if (empty($vcard->{$key}) && preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $abdate['value'][0][0], $m))
+			{
+				$vcard->{$key} = array(
+					'y' => intval($m[1]),
+					'm' => intval($m[2]),
+					'd' => intval($m[3]),
+				);
+			}
+		}
+	}
 
 	/**
 	 * Convert the parsed vCard data into CSV format
