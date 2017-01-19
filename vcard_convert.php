@@ -412,6 +412,15 @@ class vcard_convert extends Contact_Vcard_Parse
 				else
 					$vcard->work['phone'] = $tel['value'][0][0];
 			}
+			else if (in_array_nc("VOICE", $tel['param']['TYPE']))
+			{
+				if (!isset($vcard->home['phone']))
+					$vcard->home['phone'] = $tel['value'][0][0];
+				else if (!isset($vcard->work['phone']))
+					$vcard->work['phone'] = $tel['value'][0][0];
+				else if (!isset($vcard->mobile))
+					$vcard->mobile = $tel['value'][0][0];
+			}
 
 			if (in_array_nc("FAX", $tel['param']['TYPE']))
 				$vcard->fax = $tel['value'][0][0];
