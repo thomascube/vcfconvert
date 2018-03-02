@@ -15,14 +15,14 @@ Just copy the files anywhere on your disk, open a terminal and type the
 following commands:
 
 	$ cd /path/to/vcfconvert
-	$ ./vcfconvert.sh -f ldif -o destination_file.ldif source_file.vcf
+	$ $(which php) ./vcfconvert.sh.php -f ldif -o destination_file.ldif source_file.vcf
 or
 
-	$ ./vcfconvert.sh -hv -f csv -d ";" -o destination_file.csv source_file.vcf
+	$ $(which php) ./vcfconvert.sh.php -hv -f csv -d ";" -o destination_file.csv source_file.vcf
 
 To get information about optinal parameters, type
 
-	$ ./vcfconvert.sh help
+	$ $(which php) ./vcfconvert.sh.php help
 
 LICENSE
 -------

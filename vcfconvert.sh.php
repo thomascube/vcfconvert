@@ -1,21 +1,20 @@
-#!/usr/bin/php -qC 
+#!/usr/bin/php -qC
 <?php
 
-/*
- +-----------------------------------------------------------------------+
- | Commandline vCard converter                                           |
- | Version 0.8.9                                                         |
- |                                                                       |
- | Copyright (C) 2006-2013, Thomas Bruederli - Switzerland               |
- | Licensed under the GNU GPL                                            |
- |                                                                       |
- | Type './convert help' for usage information                           |
- |                                                                       |
- +-----------------------------------------------------------------------+
- | Author: Thomas Bruederli <thomas@brotherli.ch>                        |
- +-----------------------------------------------------------------------+
 
-*/
+# +-----------------------------------------------------------------------+
+# | Commandline vCard converter                                           |
+# | Version 0.8.10                                                        |
+# |                                                                       |
+# | Copyright (C) 2006-2013, Thomas Bruederli - Switzerland               |
+# | Licensed under the GNU GPL                                            |
+# |                                                                       |
+# | Type './convert help' for usage information                           |
+# |                                                                       |
+# +-----------------------------------------------------------------------+
+# | Author: Thomas Bruederli <thomas@brotherli.ch>                        |
+# +-----------------------------------------------------------------------+
+
 
 @ini_set('error_reporting', E_ALL&~E_NOTICE); 
 
