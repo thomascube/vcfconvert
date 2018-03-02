@@ -1,4 +1,4 @@
-#!/usr/bin/php -qC
+#!/usr/bin/php -C
 <?php
 
 
