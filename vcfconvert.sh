@@ -1,4 +1,4 @@
-#!/usr/bin/php -qC 
+#!/usr/bin/env php -qC 
 <?php
 
 /*
@@ -9,7 +9,7 @@
  | Copyright (C) 2006-2013, Thomas Bruederli - Switzerland               |
  | Licensed under the GNU GPL                                            |
  |                                                                       |
- | Type './convert help' for usage information                           |
+ | Type './vcfconvert.sh help' for usage information                     |
  |                                                                       |
  +-----------------------------------------------------------------------+
  | Author: Thomas Bruederli <thomas@brotherli.ch>                        |
@@ -17,7 +17,7 @@
 
 */
 
-@ini_set('error_reporting', E_ALL&~E_NOTICE); 
+@ini_set('error_reporting', E_ALL &~ E_NOTICE);
 
 require_once('vcard_convert.php');
 
@@ -49,7 +49,7 @@ function get_args()
 // read commandline arguments
 $opt = get_args();
 $usage = <<<EOF
-Usage: convert [-hilmpv] [-d delimiter] [-b identifier] [-o output_file] -f format file
+Usage: convert [-hilmpv] [-d delimiter] [-b identifier] [-o output_file] -f format <file>
   -f Target format (ldif,ldap,csv,gmail,libdlusb)
   -b LDAP identifier added to dn:
   -l Generate just a list of DN objects (only works with -b)

@@ -69,7 +69,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	/**
 	 * Constructor taking a list of converter properties
 	 */
-	function vcard_convert($p = array())
+	function __construct($p = array())
 	{
 		foreach ($p as $prop => $value)
 			$this->$prop = $value;
@@ -333,6 +333,9 @@ class vcard_convert extends Contact_Vcard_Parse
 	 */
 	function parse_adr(&$node, &$vcard)
 	{
+		$home = array();
+		$work = array();
+
 		foreach($node as $adr)
 		{
 			if (empty($adr['param']['TYPE'][0]) || in_array_nc("HOME", $adr['param']['TYPE']))
