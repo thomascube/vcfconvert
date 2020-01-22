@@ -49,14 +49,16 @@ function get_args()
 // read commandline arguments
 $opt = get_args();
 $usage = <<<EOF
-Usage: convert [-hilmpv] [-d delimiter] [-b identifier] [-o output_file] -f format <file>
+Usage: vcfconvert.sh [-hilmpv] [-d delimiter] [-c utf-8] [-b identifier] [-o output_file] -f format <file>
   -f Target format (ldif,ldap,csv,gmail,libdlusb)
   -b LDAP identifier added to dn:
   -l Generate just a list of DN objects (only works with -b)
   -o Output file (write to stdout by default)
   -d CSV col delimiter
   -h Include header line in CSV output
-  -i Convert CSV output to ISO-8859-1 encoding
+  -i Convert CSV output to ISO-8859-1 encoding (deprecated, use -c instead)
+  -c Character encoding for CSV output
+  -n Line endings for CSV output: 'n', 'r' or 'rn'
   -m Only convert cards with an e-mail address
   -p Only convert cards with phone numbers
   -v Verbose output
@@ -102,11 +104,13 @@ if ($conv->fromFile($file))
 			
 		else if ($format == 'csv')
 		{
-			$delimiter = $opt['d'] ? ($opt['d']=='\t' || $opt['d']=='tab' ? "\t" : $opt['d']) : ";";
-			$out = $conv->toCSV($delimiter, isset($opt['h']), isset($opt['i']) ? 'ISO-8859-1' : null);
+			if (!isset($opt['c']) && isset($opt['i']))
+				$opt['c'] = 'ISO-8859-1';
+			$delimiter = isset($opt['d']) ? ($opt['d']=='\t' || $opt['d']=='tab' ? "\t" : $opt['d']) : ";";
+			$out = $conv->toCSV($delimiter, isset($opt['h']), isset($opt['c']) ? strtoupper($opt['c']) : null, $opt['n']);
 			
-			if (isset($opt['v']) && isset($opt['i']))
-				echo "Converting output to ISO-8859-1\n";
+			if (isset($opt['v']) && isset($opt['c']))
+				echo "Converting output to " . strtoupper($opt['c']) . PHP_EOL;
 		}
 		else
 			die("Unknown output format\n");

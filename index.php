@@ -98,7 +98,7 @@ if (!empty($_FILES['_vcards']))
 		{
 			$header = $_POST['_header'] === '1' ? true : false;
 			$delimiter = $_POST['_delimiter'] == 'tab' ? "\t" : $_POST['_delimiter'];
-			print $conv->toCSV($delimiter, $header, $_POST['_encoding']);
+			print $conv->toCSV($delimiter, $header, $_POST['_encoding'], $_POST['_newlines']);
 			exit;
 		}
 		// extract all images from the vcard file

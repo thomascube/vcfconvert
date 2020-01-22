@@ -61,18 +61,21 @@ function set_form_fields(elem)
   var header = elem.form._header;
   var delimiter = elem.form._delimiter;
   var encoding = elem.form._encoding;
+  var newlines = elem.form._newlines;
   var dn = elem.form._dn;
 
   switch (format)
   {
     case 'gmail':
       encoding.selectedIndex = 0;
+      newlines.selectedIndex = 0;
 
     case 'ldif':
     case 'img':
       header.disabled = true;
       delimiter.disabled = true;
       encoding.disabled = true;
+      newlines.disabled = true;
       dn.disabled = true;
       break;
 
@@ -80,6 +83,7 @@ function set_form_fields(elem)
       header.disabled = true;
       delimiter.disabled = true;
       encoding.disabled = false;
+      newlines.disabled = true;
       dn.disabled = false;
       break;
 
@@ -87,16 +91,19 @@ function set_form_fields(elem)
       header.disabled = false;
       delimiter.disabled = false;
       encoding.disabled = false;
+      newlines.disabled = false;
       dn.disabled = true;
       break;
 
     case 'fritzbox':
       encoding.selectedIndex = 1;
       delimiter.selectedIndex = 1;
+      newlines.selectedIndex = 2;
       header.checked = true;
       header.disabled = true;
       delimiter.disabled = true;
       encoding.disabled = true;
+      newlines.disabled = true;
       dn.disabled = true;
       break;
   }
@@ -167,10 +174,16 @@ if (!empty($GLOBALS['error_msg']))
 <td class="cell">
   <select name="_encoding" disabled>
     <option value="UTF-8" selected>Unicode (UTF-8)</option>
+    <option value="UTF-16LE">Unicode (UTF-16LE)</option>
     <option value="ISO-8859-1">Windows Latin-1 (ISO-8859-1)</option>
     <option value="ISO-8859-15">Windows Latin-9 (ISO-8859-15)</option>
     <option value="MS-ANSI">Microsoft ANSI (Windows-1252)</option>
     <!--<option value="MacRoman">Macintosh (Mac Roman)</option>-->
+  </select>
+  <select name="_newlines" disabled>
+    <option value="lf" selected>Line Feed (Default)</option>
+    <option value="cr">Carriage Return (old Mac OS)</option>
+    <option value="crlf">CR-LF (Windows)</option>
   </select>
 </td>
 

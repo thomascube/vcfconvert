@@ -56,6 +56,19 @@ class vCard
  */
 class vcard_convert extends Contact_Vcard_Parse
 {
+	 // define mapping for newline values
+	static $NEWLINE_MAP = array(
+		'\n'   => "\n",
+		'n'    => "\n",
+		'lf'   => "\n",
+		'\r'   => "\r",
+		'r'    => "\r",
+		'cr'   => "\r",
+		'rn'   => "\r\n",
+		'\r\n' => "\r\n",
+		'crlf' => "\r\n",
+	);
+
 	var $parsed = array();
 	var $vcards = array();
 	var $file_charset = 'ISO-8859-1';
@@ -457,9 +470,10 @@ class vcard_convert extends Contact_Vcard_Parse
 	/**
 	 * Convert the parsed vCard data into CSV format
 	 */
-	function toCSV($delm="\t", $add_title=true, $encoding=null)
+	function toCSV($delm="\t", $add_title=true, $encoding=null, $newlines="\n")
 		{
 		$out = '';
+		$eol = isset(self::$NEWLINE_MAP[$newlines]) ? self::$NEWLINE_MAP[$newlines] : $newlines;
 		$this->export_count = 0;
 
 		if ($add_title)
@@ -470,7 +484,8 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= 'Business Address'.$delm.'Business Address 2'.$delm.'Business City'.$delm.'Business State'.$delm.'Business Postal Code'.$delm;
 			$out .= 'Business Country'.$delm.'Country Code'.$delm.'Related name'.$delm.'Job Title'.$delm.'Department'.$delm.'Organization'.$delm.'Notes'.$delm;
 			$out .= 'Birthday'.$delm.'Anniversary'.$delm.'Gender'.$delm;
-			$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories'."\n";
+			$out .= 'Web Page'.$delm.'Web Page 2'.$delm.'Categories';
+			$out .= $eol;
 		}
 
 		foreach ($this->cards as $card)
@@ -518,7 +533,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			$out .= $this->csv_encode($card->home['url'], $delm);
 			$out .= $this->csv_encode($card->categories, $delm, false);
 
-			$out .= "\n";
+			$out .= $eol;
 			$this->export_count++;
 		}
 
