@@ -7,8 +7,8 @@ is installed and enabled. Open your browser and type in the URL of your
 webserver with the according folder. By default, file uploads up to 2MB are 
 allowed.
 
-Comandline version
-------------------
+Command line version
+--------------------
 This package also includes a shell script to invoke the converter from the
 command line. PHP is also required to be installed on your machine.
 Just copy the files anywhere on your disk, open a terminal and type the
