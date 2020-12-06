@@ -283,7 +283,8 @@ class vcard_convert extends Contact_Vcard_Parse
 				$vcard->im['jabber'] = $card['X-JABBER'][0]['value'][0][0];
 
 			if (is_array($card['PHOTO'][0]))
-				$vcard->photo = array('data' => $card['PHOTO'][0]['value'][0][0], 'encoding' => $card['PHOTO'][0]['param']['ENCODING'][0], 'type' => $card['PHOTO'][0]['param']['TYPE'][0]);
+				$vcard->photo = array('data' => $card['PHOTO'][0]['value'][0][0], 'encoding' => $card['PHOTO'][0]['param']['ENCODING'][0], 'type' => $card['PHOTO'][0]['param']['TYPE'][0], 
+				'md5' => md5($card['PHOTO'][0]['value'][0][0]));
 
 			$vcard->categories = join(',', (array)$card['CATEGORIES'][0]['value'][0]);
 
@@ -927,7 +928,8 @@ class vcard_convert extends Contact_Vcard_Parse
 					// A FIX: Since some cards may give no (or identical) filenames
 					// after the cleanup by asciiwords, always generate a random UID
 					// for card's file name
-					$fn = asciiwords(strtolower($card->displayname));
+					// MD5 is added to enable matching the image file name with exported csv records
+					$fn = asciiwords(strtolower($card->displayname)).'-md5-'.$card->photo['md5'];
 					if (empty($fn) || preg_match("/^[_ -]+$/",$fn) || preg_match("/^-/",$fn))
 						$fn = uniqid('card-id-');
 					else
