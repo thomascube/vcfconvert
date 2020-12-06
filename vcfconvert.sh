@@ -20,6 +20,7 @@
 @ini_set('error_reporting', E_ALL &~ E_NOTICE);
 
 require_once('vcard_convert.php');
+require_once('utils.php');
 
 /**
  * Parse commandline arguments into a hash array
@@ -50,7 +51,7 @@ function get_args()
 $opt = get_args();
 $usage = <<<EOF
 Usage: vcfconvert.sh [-hilmpv] [-d delimiter] [-c utf-8] [-b identifier] [-o output_file] -f format <file>
-  -f Target format (ldif,ldap,csv,gmail,libdlusb)
+  -f Target format (ldif,ldap,csv,gmail,libdlusb,fritzbox,img)
   -b LDAP identifier added to dn:
   -l Generate just a list of DN objects (only works with -b)
   -o Output file (write to stdout by default)
@@ -112,6 +113,9 @@ if ($conv->fromFile($file))
 			if (isset($opt['v']) && isset($opt['c']))
 				echo "Converting output to " . strtoupper($opt['c']) . PHP_EOL;
 		}
+		else if ($format == 'img')
+			$out = $conv->toImages('tmp');
+
 		else
 			die("Unknown output format\n");
 		
