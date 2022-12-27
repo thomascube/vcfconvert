@@ -24,29 +24,50 @@ require_once('Contact_Vcard_Parse.php');
 class vCard
 {
 	var $version;
-	var $displayname;
-	var $surname;
-	var $firstname;
-	var $middlename;
-	var $nickname;
-	var $title;
-	var $birthday;
-	var $organization;
-	var $department;
-	var $jobtitle;
-	var $home = array();
-	var $work = array();
-	var $countrycode;
-	var $relatedname;
-	var $email;
-	var $email2;
-	var $email3;
-	var $pager;
-	var $mobile;
+	var $displayname = '';
+	var $surname = '';
+	var $firstname = '';
+	var $middlename = '';
+	var $nickname = '';
+	var $title = '';
+	var $birthday = '';
+	var $gender = '';
+	var $organization = '';
+	var $department = '';
+	var $jobtitle = '';
+	var $home = array(
+		'phone' => '',
+		'url' => '',
+		'fax' => '',
+		'addr1' => '',
+		'addr2' => '',
+		'city' => '',
+		'state' => '',
+		'zipcode' => '',
+		'country' => '',
+	);
+	var $work = array(
+		'phone' => '',
+		'url' => '',
+		'fax' => '',
+		'addr1' => '',
+		'addr2' => '',
+		'city' => '',
+		'state' => '',
+		'zipcode' => '',
+		'country' => '',
+	);
+	var $countrycode = '';
+	var $relatedname = '';
+	var $email = '';
+	var $email2 = '';
+	var $email3 = '';
+	var $pager = '';
+	var $mobile = '';
 	var $im = array();
-	var $notes;
-	var $categories;
-	var $uid;
+	var $notes = '';
+	var $categories = '';
+	var $uid = '';
 	var $photo;
 }
 
@@ -176,7 +197,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			// extract birthday and anniversary
 			foreach (array('BDAY' => 'birthday', 'ANNIVERSARY' => 'anniversary', 'X-ANNIVERSARY' => 'anniversary') as $vcf => $propname)
 			{
-				if (is_array($card[$vcf]))
+				if (in_array($vcf, $card) && is_array($card[$vcf]))
 				{
 					$temp = preg_replace('/[\-\.\/]/', '', $card[$vcf][0]['value'][0][0]);
 					$vcard->$propname = array(
@@ -186,61 +207,61 @@ class vcard_convert extends Contact_Vcard_Parse
 				}
 			}
 
-			if (is_array($card['GENDER']))
+			if (in_array('GENDER', $card) && is_array($card['GENDER']))
 				$vcard->gender = $card['GENDER'][0]['value'][0][0];
-			else if (is_array($card['X-GENDER']))
+			else if (in_array('X-GENDER', $card) && is_array($card['X-GENDER']))
 				$vcard->gender = $card['X-GENDER'][0]['value'][0][0];
 
 			if (!empty($vcard->gender))
 				$vcard->gender = strtoupper($vcard->gender[0]);
 
 			// extract job_title
-			if (is_array($card['TITLE']))
+			if (in_array('TITLE', $card) && is_array($card['TITLE']))
 				$vcard->jobtitle = $card['TITLE'][0]['value'][0][0];
 
 			// extract UID
-			if (is_array($card['UID']))
+			if (in_array('UID', $card) && is_array($card['UID']))
 				$vcard->uid = $card['UID'][0]['value'][0][0];
 
 			// extract org and dep
-			if (is_array($card['ORG']) && ($temp = $card['ORG'][0]['value']))
+			if (in_array('ORG', $card) && is_array($card['ORG']) && ($temp = $card['ORG'][0]['value']))
 			{
 				$vcard->organization = trim($temp[0][0]);
 				$vcard->department   = trim($temp[1][0]);
 			}
 			
 			// extract urls
-			if (is_array($card['URL']))
+			if (in_array('URL', $card) && is_array($card['URL']))
 				$this->parse_url($card['URL'], $vcard);
 
 			// extract addresses
-			if (is_array($card['ADR']))
+			if (in_array('ADR', $card) && is_array($card['ADR']))
 				$this->parse_adr($card['ADR'], $vcard);
 
 			// extract phones
-			if (is_array($card['TEL']))
+			if (in_array('TEL', $card) && is_array($card['TEL']))
 				$this->parse_tel($card['TEL'], $vcard);
 
 			// read Apple Address Book proprietary fields
 			for ($n = 1; $n <= 9; $n++)
 			{
 				$prefix = 'ITEM'.$n;
-				if (is_array($card["$prefix.TEL"])) {
+				if (in_array("$prefix.TEL", $card) && is_array($card["$prefix.TEL"])) {
 					$this->parse_tel($card["$prefix.TEL"], $vcard);
 				}
-				if (is_array($card["$prefix.URL"])) {
+				if (in_array("$prefix.URL", $card) && is_array($card["$prefix.URL"])) {
 					$this->parse_url($card["$prefix.URL"], $vcard);
 				}
-				if (is_array($card["$prefix.ADR"])) {
+				if (in_array("$prefix.ADR", $card) && is_array($card["$prefix.ADR"])) {
 					$this->parse_adr($card["$prefix.ADR"], $vcard);
 				}
-				if (is_array($card["$prefix.X-ABADR"])) {
+				if (in_array("$prefix.X-ABADR", $card) && is_array($card["$prefix.X-ABADR"])) {
 					$this->parse_cc($card["$prefix.X-ABADR"], $vcard);
 				}
-				if (is_array($card["$prefix.X-ABDATE"])) {
+				if (in_array("$prefix.X-ABDATE", $card) && is_array($card["$prefix.X-ABDATE"])) {
 					$this->parse_abdate($card["$prefix.X-ABDATE"], $vcard, $card["$prefix.X-ABLABEL"][0]);
 				}
-				if (is_array($card["$prefix.X-ABRELATEDNAMES"])) {
+				if (in_array("$prefix.X-ABRELATEDNAMES", $card) && is_array($card["$prefix.X-ABRELATEDNAMES"])) {
 					$this->parse_rn($card["$prefix.X-ABRELATEDNAMES"], $vcard /*, $card["$prefix.X-ABLABEL"][0]*/);
 				}
 			}
@@ -248,7 +269,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			// extract e-mail addresses
 			$a_email = array();
 			$n = 0;
-			if (is_array($card['EMAIL'])) {
+			if (in_array('EMAIL', $card) && is_array($card['EMAIL'])) {
 				while (isset($card['EMAIL'][$n])) {
 					$a_email[] = $card['EMAIL'][$n]['value'][0][0];
 					$n++;
@@ -256,7 +277,7 @@ class vcard_convert extends Contact_Vcard_Parse
 			}
 			if ($n < 2) { //as only 3 e-mail address will be exported we don't need to search for more
 				for ($n = 1; $n <= 9; $n++) {
-					if (is_array($card["ITEM$n.EMAIL"]))
+					if (in_array("ITEM$n.EMAIL", $card) && is_array($card["ITEM$n.EMAIL"]))
 					{
 						$a_email[] = $card["ITEM$n.EMAIL"][0]['value'][0][0];
 						if (isset($card["ITEM$n.EMAIL"][1]))
@@ -273,16 +294,16 @@ class vcard_convert extends Contact_Vcard_Parse
 				$vcard->email3 = $a_email[2];
 			
 			// find IM entries
-			if (is_array($card['X-AIM']))
+			if (in_array('X-AIM', $card) && is_array($card['X-AIM']))
 				$vcard->im['aim'] = $card['X-AIM'][0]['value'][0][0];
-			if (is_array($card['X-IQC']))
+			if (in_array('X-ICQ', $card) && is_array($card['X-ICQ']))
 				$vcard->im['icq'] = $card['X-ICQ'][0]['value'][0][0];
-			if (is_array($card['X-MSN']))
+			if (in_array('X-MSN', $card) && is_array($card['X-MSN']))
 				$vcard->im['msn'] = $card['X-MSN'][0]['value'][0][0];
-			if (is_array($card['X-JABBER']))
+			if (in_array('X-Jabber', $card) && is_array($card['X-JABBER']))
 				$vcard->im['jabber'] = $card['X-JABBER'][0]['value'][0][0];
 
-			if (is_array($card['PHOTO'][0]))
+			if (in_array('PHOTO', $card) && is_array($card['PHOTO'][0]))
 				$vcard->photo = array('data' => $card['PHOTO'][0]['value'][0][0], 'encoding' => $card['PHOTO'][0]['param']['ENCODING'][0], 'type' => $card['PHOTO'][0]['param']['TYPE'][0]);
 
 			$vcard->categories = join(',', (array)$card['CATEGORIES'][0]['value'][0]);
@@ -950,6 +971,8 @@ class vcard_convert extends Contact_Vcard_Parse
 	 */
 	function csv_encode($str, $delm, $add_delm=true)
 	{
+		if ($str === NULL)
+			return "";
 		if (strpos($str, $delm))
 			$str = '"'.$str.'"';
 		return preg_replace('/\r?\n/', ' ', $str) . ($add_delm ? $delm : '');
@@ -982,7 +1005,7 @@ class vcard_convert extends Contact_Vcard_Parse
 	 */
 	function normalize_phone($phone)
 	{
-		if (strlen($this->accesscode))
+		if ($this->accesscode !== NULL && strlen($this->accesscode))
 			$phone = preg_replace('/^[\+|00]+' . $this->accesscode . '[- ]*(\d+)/', '0\1', $phone);
 		return $phone;
 	}
