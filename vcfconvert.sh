@@ -1,4 +1,4 @@
-#!/usr/bin/env php -qC 
+#!/usr/bin/env -S php -q -C 
 <?php
 
 /*
@@ -36,7 +36,7 @@ function get_args()
 			for ($j=1; $j < strlen($arg); $j++)
 			{
 				$key = $arg[$j];
-				$value = $_SERVER['argv'][$i+1]{0} != '-' ? preg_replace(array('/^["\']/', '/["\']$/'), '', $_SERVER['argv'][++$i]) : true;
+				$value = $_SERVER['argv'][$i+1][0] != '-' ? preg_replace(array('/^["\']/', '/["\']$/'), '', $_SERVER['argv'][++$i]) : true;
 				$args[$key] = $value;
 			}
 		}
@@ -67,7 +67,7 @@ Usage: vcfconvert.sh [-hilmpv] [-d delimiter] [-c utf-8] [-b identifier] [-o out
 EOF;
 
 // show help
-if ($opt[0] == 'help')
+if (count($opt) === 0 || $opt[0] == 'help')
 	die($usage);
 
 // read arguments
