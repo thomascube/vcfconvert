@@ -1,4 +1,4 @@
-#!/usr/bin/env php -qC 
+#!/usr/bin/env -S php -qC 
 <?php
 
 /*
@@ -36,7 +36,7 @@ function get_args()
 			for ($j=1; $j < strlen($arg); $j++)
 			{
 				$key = $arg[$j];
-				$value = $_SERVER['argv'][$i+1]{0} != '-' ? preg_replace(array('/^["\']/', '/["\']$/'), '', $_SERVER['argv'][++$i]) : true;
+				$value = $_SERVER['argv'][$i+1][0] != '-' ? preg_replace(array('/^["\']/', '/["\']$/'), '', $_SERVER['argv'][++$i]) : true;
 				$args[$key] = $value;
 			}
 		}
