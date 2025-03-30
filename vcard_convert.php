@@ -64,6 +64,7 @@ class vCard
 	var $email3 = '';
 	var $pager = '';
 	var $mobile = '';
+	var $fax = '';
 	var $im = array();
 	var $notes = '';
 	var $categories = '';
@@ -90,6 +91,7 @@ class vcard_convert extends Contact_Vcard_Parse
 		'crlf' => "\r\n",
 	);
 
+	var $cards = array();
 	var $parsed = array();
 	var $vcards = array();
 	var $file_charset = 'ISO-8859-1';
@@ -306,7 +308,8 @@ class vcard_convert extends Contact_Vcard_Parse
 			if (array_key_exists('PHOTO', $card) && is_array($card['PHOTO'][0]))
 				$vcard->photo = array('data' => $card['PHOTO'][0]['value'][0][0], 'encoding' => $card['PHOTO'][0]['param']['ENCODING'][0], 'type' => $card['PHOTO'][0]['param']['TYPE'][0]);
 
-			$vcard->categories = join(',', (array)$card['CATEGORIES'][0]['value'][0]);
+			if (array_key_exists('CATEGORIES', $card) && is_array($card['CATEGORIES'][0]))
+				$vcard->categories = join(',', (array)$card['CATEGORIES'][0]['value'][0]);
 
 			$this->cards[] = $vcard;
 			}
